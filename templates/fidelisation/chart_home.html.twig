@@ -1,0 +1,44 @@
+<script>
+const ctx = document.getElementById('myChart').getContext('2d');
+var chartData = $('<div>').html('{{ effectif_provenance }}')[0].textContent;
+var chartData = JSON.parse(chartData);
+console.log(chartData)
+const data = {
+  labels: [
+    'OTA',
+    'TOA',
+    'CORPO',
+    'DIRECT'
+  ],
+  datasets: [{
+    label: 'Provenance client',
+    data: [
+        chartData[0].eff,
+        chartData[1].eff,
+        chartData[2].eff,
+        chartData[3].eff,
+    ],
+    backgroundColor: [
+        "#1098F7",
+        "#D49E00",
+        "#47C582",
+        "#7B61FF"
+    ],
+    borderColor : 'transparent',
+    hoverOffset: 4
+  }]
+};
+const myChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: data,
+    options: {
+        plugins: {
+            legend :{
+                labels : {
+                    color : "white"
+                }
+            }
+        }
+    }
+});
+</script>

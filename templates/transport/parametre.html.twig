@@ -1,0 +1,811 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}ESPACE DE TRAVAIL{% endblock %}
+{% block body %}
+<div id="app">
+    <div class="title-page-trans">
+        <h1 class="fs-primary">ESPACE DE TRAVAIL</h1>
+        <h3 class="fs-secondary fs-grey">Gestion des équipes et espace de travail</h3>
+    </div>
+    <div class="cards-content d-flex">
+        <div class="d-flex flex-column justify-content-between card-item-min-et-default"  :class="isUserEdit ? 'card-item' : 'card-item-min' ">
+            <section class="top-card">
+                <div class="card-head">
+                    <h2 class="card-title" style="margin-bottom:25px;">
+                        Mon profil <span @click="setUserEdit" class="fa fa-pencil arrondir"></span>
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="card-profile d-flex justify-content-between align-items-center mb-16">
+                        {% if app.user.image %}
+                            <img 
+                                    v-if="image_url"
+                                    :src="image_url"
+                                    class="img-rounded" width="119px" height="119px" 
+                                    alt="pdp"
+                                    style="position:absolute; margin-top:-15px;"
+                                >
+                            <img
+                                v-if="!image_url"
+                                style="margin-bottom:25px; position:absolute; color: transparent;"
+                                class="img-rounded" width="119px" height="119px" src="{{ asset('uploads/users/'~ app.user.image) }}" alt="pdp">
+                            <div class="d-flex justify-content-center align-items-center"
+                                style="width:119px; height:119px; position: relative;
+                            bottom: 13px;"
+                            >
+                                <span class="fa fa-camera fa-x3" style="position:relative; color:black !important">
+                                    <input 
+                                        @change="onFileChange"
+                                        ref="file"
+                                        type="file" 
+                                        style="
+                                                position: absolute;
+                                                top: 0px;
+                                                left: 0;
+                                                width: 100px;
+                                                height: 100px;
+                                                border: 1px solid red;
+                                                margin-left: -44px;
+                                                opacity: 0;
+                                                margin-top: -44px;
+                                        " name="image" 
+                                        id="input-file">
+                                </span>
+                            </div>
+                            {% else %}
+                                <img 
+                                    v-if="image_url"
+                                    :src="image_url"
+                                    class="img-rounded" width="119px" height="119px" 
+                                    alt="pdp"
+                                    style="position:absolute; color : transparent"
+                                >
+                                <div class="d-flex justify-content-center align-items-center"
+                                    style="width:100px; height:100px; border:5px solid lightGrey; border-radius:50%;"
+                                >
+                                    <span class="fa fa-camera fa-x3" style="position:relative;">
+                                        <input 
+                                            @change="onFileChange"
+                                            ref="file"
+                                            type="file" 
+                                            style="
+                                                position: absolute;
+                                                top: 0px;
+                                                left: 0;
+                                                width: 100px;
+                                                height: 100px;
+                                                border: 1px solid red;
+                                                margin-left: -44px;
+                                                opacity: 0;
+                                                margin-top: -44px;
+                                            " name="image" 
+                                            id="input-file">
+                                    </span>
+                                </div>
+                        {% endif %}
+                        <div class="profile-detail d-flex flex-column juctify-content-center align-items-start">
+                            <div>
+                                <h4 class="nom-profile">
+                                    {{ app.user.nom| capitalize }}
+                                </h4>
+                            </div>
+                            {# <div class="statut">
+                                <h5 class="fs-blue-grey">{{ app.user.profile }}</h5>
+                                <h5 class="fs-blue-grey">{{ app.user.email }}</h5>
+                            </div> #}
+                        </div>
+                    </div>
+                    <div v-show="isUserEdit" class="form-parametre">
+                        <form action="" style="position:relative;" autocomplete="off">
+                            <input autocomplete="false" name="hidden" type="hidden" class="hidden">
+                            <div class="form-group">
+                                <input v-model="nomEditMyProfile" placeholder="Nom" type="text" class="form-control input-parameter">
+                            </div>
+                            <div class="form-group">
+                                <input v-model="prenomEditMyProfile" placeholder="Prénom" type="text" class="form-control input-parameter">
+                            </div>
+                            <div class="form-group">
+                                <input v-model="emailEditMyProfile" placeholder="Email" type="text" class="form-control input-parameter">
+                            </div>
+                            <div class="form-group">
+                                <input v-model="passEditMyProfile" placeholder="Mot de passe" type="password" class="form-control input-parameter">
+                            </div>
+                            <div class="form-group">
+                                <input v-model="confPassEditMyProfile" placeholder="Confirmer le mot de passe  " type="password" class="form-control input-parameter">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <div class="form-group button-register">
+                <button @click.prevent="ownEditUser('{{ app.user.id }}')" class="btn-submit-parameter">Enregistrer</button>
+            </div>
+        </div>
+         {% if app.user.profile == 'super_admin' %}
+            <div class="card-item d-flex flex-column justify-content-between">
+            <section class="top-card">
+                <div class="card-head">
+                    <h2 class="card-title">
+                    Gestion des équipes
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-parametre">
+                        <form action="" ref="formAdd">
+                            <div class="form-group">
+                                <select
+                                        data-show-subtext="true"
+                                        data-live-search="true"
+                                        name="" id="choix_role" 
+                                        class="selectpicker form-control input-parameter"
+                                        v-model="typeAdmin"
+                                >
+                                    <option value="">Type de l'administrateur</option>
+                                    <option value="super_admin">Super admin</option>
+                                    <option value="admin_enac_transport">Admin</option>
+                                </select>
+                            </div>
+                            <div class="form-group nom_hotel">
+                                <select
+                                    data-show-subtext="true"
+                                    data-live-search="true"
+                                    class="selectpicker form-control input-parameter"
+                                    name="" id="choix_hotel"
+                                    v-model="hotelEntreprise"
+                                >
+                                    <option value="tous">Tous</option>
+                                    <option value="ENAC Transport">Transport</option>
+                                </select>
+                            </div>
+                            <div v-show="hotelEntreprise == 'ENAC Transport'" class="checkbox-list">
+                                <ul class="d-flex flex-wrap justify-content-between align-items-center">
+                                    <li>
+                                        <div class="custom-control custom-checkbox">
+                                            <input v-model="isVoyage" type="checkbox" class="custom-control-input" id="voyage">
+                                            <label class="custom-control-label" for="voyage">Voyages</label>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="custom-control custom-checkbox">
+                                            <input v-model="isCarburant" type="checkbox" class="custom-control-input" id="carburant">
+                                            <label class="custom-control-label" for="carburant">Carburant</label>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="custom-control custom-checkbox">
+                                            <input v-model="isPneu" type="checkbox" class="custom-control-input" id="pneu" >
+                                            <label class="custom-control-label" for="pneu">Pneus</label>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <ul class="d-flex flex-wrap justify-content-between align-items-center">
+                                    <li>
+                                        <div class="custom-control custom-checkbox">
+                                            <input v-model="isVehicule" type="checkbox" class="custom-control-input" id="vehicule">
+                                            <label class="custom-control-label" for="vehicule">Vehicule</label>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="custom-control custom-checkbox">
+                                            <input v-model="isChauffeur" type="checkbox" class="custom-control-input" id="chauffeur" >
+                                            <label class="custom-control-label" for="chauffeur">Chauffeur</label>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="custom-control custom-checkbox">
+                                            <input v-model="isGarage" class="custom-control-input" type="checkbox" id="garage">
+                                            <label class="custom-control-label" for="garage">Garage</label>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="form-group">
+                                <input v-model="nomUser" placeholder="Nom" type="text" class="form-control input-parameter">
+                            </div>
+                            <div class="form-group">
+                                <input v-model="prenomUser" placeholder="Prénom" type="text" class="form-control input-parameter">
+                            </div>
+                            <div v-show="!editUserNoEmailPass" class="form-group">
+                                <input v-model="emailUser" placeholder="Adresse email" type="email"
+                                    pattern=".+@globex\.com" required class="form-control input-parameter">
+                            </div>
+                            <div v-show="!editUserNoEmailPass" class="form-group">
+                                <input v-model="passUser" placeholder="son mot de passe" type="password" class="form-control input-parameter">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <div class="form-group button-register">
+                <button @click="addUser" class="btn-submit-parameter">Enregistrer</button>
+            </div>
+        </div>
+         {% endif %}
+    </div>
+    {# liste #}
+    {% if app.user.profile == 'super_admin' %}
+        <div class="cards-content d-flex with-mb-50">
+        <div class="card-item ">
+            <div class="card-head">
+                <h2 class="card-title">
+                    Super Administrateur
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="list-equipe">
+                    <div class="names not-bordered">
+                        <ul id="listSA">
+                            <div v-if="isLoadingParam" class="loading-param d-flex justify-content-center align-items-center">Chargement ...</div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-item ">
+            <div class="card-head">
+                <h2 class="card-title">
+                    Administrateur
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="list-equipe" id="listAdmin">
+                    <div v-if="isLoadingParam" class="loading-param d-flex justify-content-center align-items-center">Chargement ...</div>
+                </div>
+            </div>
+        </div>
+        <div class="card-item">
+            <div class="card-head">
+                <h2 class="card-title">
+                    Simple Accès
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="list-equipe" id="listASimple">
+                    <div v-if="isLoadingParam" class="loading-param d-flex justify-content-center align-items-center">Chargement ...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block javascripts %}
+   <script>
+    var app = new Vue({
+        el : "#app",
+        delimiters : ['${', '}'],
+        data(){
+            return {
+                emailEditMyProfile : '{{ app.user.email }}',
+                passEditMyProfile : '',
+                confPassEditMyProfile : '',
+                imageUserEdit : '',
+                nomEditMyProfile: '{{ app.user.nom }}', 
+                prenomEditMyProfile : '{{ app.user.prenom }}',
+                typeAdmin : '',
+                hotelEntreprise : '',
+                nomUser : '',
+                prenomUser: '',
+                emailUser : '',
+                passUser: '',
+
+                isUserEdit: false,
+                isLoadingParam : false,
+                image_url : null,
+                editUserNoEmailPass : false,
+                editUserId : null,
+
+                isVoyage : false,
+                isCarburant : false,
+                isPneu : false,
+                isVehicule : false,
+                isChauffeur : false,
+                isGarage : false
+            }
+        },
+        computed : {
+            justTesting(){
+                return true
+            }
+        },
+        mounted(){
+            // on affiche tous les information de l'user
+            this.loadUser();
+        },
+        methods : {
+            setUserEdit(){
+                this.isUserEdit = !this.isUserEdit;
+            },
+            validateEmail(email) 
+            {
+                var re = /\S+@\S+\.\S+/;
+                return re.test(email);
+            },
+            onFileChange(e){
+                this.isUserEdit = true;
+                const file = e.target.files[0];
+                this.image_url = URL.createObjectURL(file);
+                this.imageUserEdit = this.$refs.file.files[0];
+            },
+            addUser(){
+                if(
+                    this.typeAdmin != '' &&
+                    this.hotelEntreprise != '' &&
+                    this.nomUser != '' &&
+                    this.emailUser != '' &&
+                    this.passUser != '' &&
+                    this.editUserNoEmailPass == false 
+                ){
+                    if(this.validateEmail(this.emailUser)){
+                        // add user 
+                        var data = {
+                            typeAdmin : this.typeAdmin,
+                            hotelEntreprise : this.hotelEntreprise ,
+                            nomUser : this.nomUser, 
+                            prenomUser : this.prenomUser, 
+                            emailUser : this.emailUser, 
+                            passUser : this.passUser,
+                            isVoyage : this.isVoyage,
+                            isCarburant : this.isCarburant,
+                            isPneu : this.isPneu,
+                            isVehicule : this.isVehicule,
+                            isChauffeur : this.isChauffeur,
+                            isChauffeur : this.isChauffeur
+
+                        }
+                        //console.log(data)
+                        axios.interceptors.request.use((config) => {
+                            // av
+                            $('.btn-submit-parameter').text('Patienter...')
+                            return config;
+                        }, (error) => {
+                            return Promise.reject(error);
+                        });
+
+                        axios.interceptors.response.use((response) => {
+                            // ap
+                            $('.btn-submit-parameter').text('Enregistrer')
+                            return response;
+                        }, (error) => {
+                            
+                            return Promise.reject(error);
+                        });
+                        axios.post('/profile/trans/addUser', data)
+                        .then((response) => {
+                            if(response.data == 'ok'){
+                                this.$refs.formAdd.reset();
+                                this.loadUser()
+                            }else{
+                                alert(response.data);
+                            }
+
+                        }, (error) => {
+                            console.error("Erreur list user param");
+                        });
+
+                    }else{
+                        alert("Adresse email non-valide")
+                    }
+                }else if(
+                    this.typeAdmin != '' &&
+                    this.hotelEntreprise != '' &&
+                    this.nomUser != '' &&
+                    this.editUserNoEmailPass == true 
+                ){
+                    var data = {
+                        typeAdmin : this.typeAdmin,
+                        hotelEntreprise : this.hotelEntreprise ,
+                        nomUser : this.nomUser, 
+                        prenomUser : this.prenomUser,
+                        editNoMailPass : true,
+                        user_id : this.editUserId,
+                        isVoyage : this.isVoyage,
+                        isCarburant : this.isCarburant,
+                        isPneu : this.isPneu,
+                        isVehicule : this.isVehicule,
+                        isChauffeur : this.isChauffeur,
+                        isChauffeur : this.isChauffeur
+                    }
+                    axios.interceptors.request.use((config) => {
+                        // av
+                        $('.btn-submit-parameter').text('Patienter...')
+                        return config;
+                    }, (error) => {
+                        return Promise.reject(error);
+                    });
+
+                    axios.interceptors.response.use((response) => {
+                        // ap
+                        $('.btn-submit-parameter').text('Enregistrer')
+                        return response;
+                    }, (error) => {
+                        
+                        return Promise.reject(error);
+                    });
+                    axios.post('/profile/trans/addUser', data)
+                    .then((response) => {
+                        if(response.data == 'ok'){
+                            this.$refs.formAdd.reset();
+                            this.loadUser()
+                        }else{
+                            alert(response.data);
+                        }
+
+                    }, (error) => {
+                        console.error("Erreur list user param");
+                    });
+                }
+                else{
+                    alert("Veuillez remplir tous les champs")
+                }
+            },
+            loadUser(){
+                this.isVoyage = false;
+                this.isCarburant = false;
+                this.isPneu = false;
+                this.isVehicule = false;
+                this.isChauffeur = false;
+                this.isChauffeur = false;
+                var self = this;
+                this.$refs.formAdd.reset();
+                axios.interceptors.request.use((config) => {
+                    this.isLoadingParam = true;
+                    return config;
+                }, (error) => {
+                    return Promise.reject(error);
+                });
+
+                axios.interceptors.response.use((response) => {
+                    this.isLoadingParam = true;
+                    return response;
+                }, (error) => {
+                    
+                    return Promise.reject(error);
+                });
+                //console.log(data);
+                axios.post('/profile/trans/load/trans/list_user')
+                .then((response) => {
+                    var htmlSA = ``;
+                    response.data.forEach((item, index) => {
+                        if(item.user_profile == 'super_admin'){
+                            htmlSA += `
+                                <li class="not-flex">
+                                    <div class="d-flex my-2">
+                                        <span data-id="` + item.user_id + `" class="fa fa-pencil text-primary btn-action-param edit-user"></span>
+                                        <span data-id="` + item.user_id + `" class="ml-3 fa fa-trash-o text-danger btn-action-param delete-user"></span>
+                                    </div>
+                                    <div class="names-item">
+                                        `+ item.user_prenom + ` ` + item.user_nom + `
+                                    </div> 
+                                </li>
+                            `;
+                        }
+                    })
+                    $('#listSA').html(htmlSA);
+                    var htmlAdmin = ``;
+                    var incAdmin = 0;
+                    response.data.forEach((item, index) => {
+                        if(item.user_roles[0] != 'ROLE_USER' && item.user_profile != 'super_admin'){
+                            incAdmin++;
+                            var etab = item.user_etablissement != 'tous_hotel' ? item.user_etablissement : 'Accès à tous les hôtels'
+                            htmlAdmin += `
+                                <div class="names">
+                                    <div class="d-flex my-2">
+                                        <span data-id="` + item.user_id + `" class="fa fa-pencil text-primary btn-action-param edit-user"></span>
+                                        <span data-id="` + item.user_id + `" class="ml-3 fa fa-trash-o text-danger btn-action-param delete-user"></span>
+                                    </div>
+                                    <h3>` + etab + `</h3>
+                                    <ul>
+                                        <li>
+                                            <div class="names-item">
+                                                `+ item.user_prenom + ` <br/> ` + item.user_nom + `
+                                            </div>
+                                            <div class="names-roles">
+                                                ` + 'Administrateur' + `
+                                            </div> 
+                                        </li>
+                                    </ul>
+                                </div>
+                            `;
+                        }
+                    })
+                    $('#listAdmin').html(htmlAdmin);
+
+                    var htmlASimple = ``;
+                    var incASimple = 0;
+                    response.data.forEach((item, index) => {
+                        if(item.user_roles[0] == 'ROLE_USER'){
+                            incASimple++;
+                            var etab = item.user_etablissement != 'tous_hotel' ? item.user_etablissement : 'Accès à tous les hôtels'
+                            var isRecep = item.receptionniste;
+                            var isComptable = item.comptable;
+                            htmlASimple += `
+                                <div class="names">
+                                    <div class="d-flex my-2">
+                                        <span data-id="` + item.user_id + `" class="fa fa-pencil text-primary btn-action-param edit-user"></span>
+                                        <span data-id="` + item.user_id + `" class="ml-3 fa fa-trash-o text-danger btn-action-param delete-user"></span>
+                                    </div>
+                                    <h3>` + etab + `</h3>
+                                    <ul>
+                                        <li>
+                                            <div class="names-item">
+                                                `+ item.user_prenom + ` <br/> ` + item.user_nom + `
+                                            </div>
+                                            <div class="names-roles">
+                                                Accès simple
+                                            </div> 
+                                        </li>
+                                    </ul>
+                                </div>
+                            `;
+                        }
+                    })
+                    //with-scroll
+                    if(incASimple > 4){
+                       $('#listASimple').parent().parent().addClass('with-scroll');
+                    }
+                    if(incAdmin > 4){
+                       $('#listAdmin').parent().parent().addClass('with-scroll');
+                    }
+                    $('#listASimple').html(htmlASimple);
+
+                }, (error) => {
+                    console.error("Erreur list user param");
+                });
+            },
+            ownEditUser(id){
+                if(
+                    this.emailEditMyProfile != '' &&
+                    this.passEditMyProfile != '' &&
+                    this.confPassEditMyProfile != '' &&
+                    this.imageUserEdit != ''
+                ){
+                    if(this.validateEmail(this.emailEditMyProfile)){
+                        // add user 
+                        
+                        let formData = new FormData();
+                        formData.append('file', this.imageUserEdit);
+                        formData.append('email', this.emailEditMyProfile);
+                        formData.append('pass', this.passEditMyProfile);
+                        formData.append('c_pass', this.confPassEditMyProfile);
+                        formData.append('nom', this.nomEditMyProfile);
+                        formData.append('prenom', this.prenomEditMyProfile);
+                        formData.append('id', id);
+                        
+                        axios.interceptors.request.use((config) => {
+                            // av
+                            $('.btn-submit-parameter').text('Patienter...')
+                            return config;
+                        }, (error) => {
+                            return Promise.reject(error);
+                        });
+
+                        axios.interceptors.response.use((response) => {
+                            // ap
+                            $('.btn-submit-parameter').text('Enregistrer')
+                            return response;
+                        }, (error) => {
+                            
+                            return Promise.reject(error);
+                        });
+                        axios.post('/profile/edit_user_compte', formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        })
+                        .then((response) => {
+                            location.reload();
+                            this.loadUser()
+
+                        }, (error) => {
+                            console.error("Erreur list user param");
+                        });
+
+                    }else{
+                        alert("Adresse email non-valide")
+                    }
+                }else if(
+                    this.emailEditMyProfile == '' &&
+                    this.passEditMyProfile == '' &&
+                    this.confPassEditMyProfile == '' &&
+                    this.imageUserEdit != ''
+                ){
+                    
+                    let formData = new FormData();
+                    formData.append('file', this.imageUserEdit);
+                    formData.append('id', id);
+                    formData.append('nom', this.nomEditMyProfile);
+                    formData.append('prenom', this.prenomEditMyProfile);
+                        
+                    axios.interceptors.request.use((config) => {
+                        // av
+                        $('.btn-submit-parameter').text('Patienter...')
+                        return config;
+                    }, (error) => {
+                        return Promise.reject(error);
+                    });
+
+                    axios.interceptors.response.use((response) => {
+                        // ap
+                        $('.btn-submit-parameter').text('Enregistrer')
+                        return response;
+                    }, (error) => {
+                        
+                        return Promise.reject(error);
+                    });
+                    axios.post('/profile/edit_user_compte', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    })
+                    .then((response) => {
+                        if(response.data.statut == 'success'){
+                            if(response.data.image != ''){
+                                var url = "{{ asset('uploads/users/') }}";
+                                url = url + response.data.image;
+                                $("#pdp_nav").attr('src', url);
+                                location.reload();
+                                this.loadUser()
+                            }
+                        }
+                    }, (error) => {
+                        console.error("Erreur list user param");
+                    });
+                }
+                else if(
+                    this.emailEditMyProfile != '' &&
+                    this.passEditMyProfile != '' &&
+                    this.confPassEditMyProfile != '' &&
+                    this.imageUserEdit == ''
+                ){
+                    let formData = new FormData();
+                    formData.append('file', this.imageUserEdit);
+                    formData.append('id', id);
+                    formData.append('nom', this.nomEditMyProfile);
+                    formData.append('prenom', this.prenomEditMyProfile);
+                        
+                    axios.interceptors.request.use((config) => {
+                        // av
+                        $('.btn-submit-parameter').text('Patienter...')
+                        return config;
+                    }, (error) => {
+                        return Promise.reject(error);
+                    });
+
+                    axios.interceptors.response.use((response) => {
+                        // ap
+                        $('.btn-submit-parameter').text('Enregistrer')
+                        return response;
+                    }, (error) => {
+                        
+                        return Promise.reject(error);
+                    });
+                    axios.post('/profile/edit_user_compte', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    })
+                    .then((response) => {
+                        if(response.data.statut == 'success'){
+                            if(response.data.image != ''){
+                                var url = "{{ asset('uploads/users/') }}";
+                                url = url + response.data.image;
+                                $("#pdp_nav").attr('src', url);
+                                 this.loadUser()
+                            }
+                        }
+                    }, (error) => {
+                        console.error("Erreur list user param");
+                    });
+                }
+            },
+            handleEditUser(id){
+                this.editUser(data);
+            },
+            editUser(data){
+                this.typeAdmin = data.typeAdmin;
+                this.hotelEntreprise = data.hotelEntreprise;
+                this.nomUser = data.nomUser;
+                this.prenomUser = data.nomUser;
+                this.emailUser = data.nomUser;
+            }
+        }
+    })
+    $(document).ready(function(){
+        $('.selectpicker').selectpicker();
+        app.isUserEdit = false;
+        $(document).on('click', '.edit-user', function(){
+            var id = $(this).attr('data-id');
+            getUser(id)
+        })
+        $(document).on('click', '.delete-user', function(){
+            var id = $(this).attr('data-id');
+            var isDelete = confirm('Voulez-vous vraiment supprimer cet utilisateur ?')
+            if(isDelete){
+                $.post('/security/delete_user/' + id, function(data){
+                    if(data == 'ok'){
+                        app.loadUser();
+                    }
+                })
+            }
+        })
+        function getUser(id){
+            $.get('/profile/get-user/parametre/' + id, function(data){
+                //console.log(data)
+                if(data.hotel_nom == 'tous' && data.profile == 'super_admin'){
+                    app.typeAdmin = 'super_admin';
+                    app.hotelEntreprise = 'tous';
+                }
+                else if(data.hotel_nom == 'tous_hotel' && data.profile == 'admin_all_hotels'){
+                    app.typeAdmin = 'admin_all_hotels';
+                    app.hotelEntreprise = 'tous_hotel';
+                }
+                else if(
+                    data.profile == 'admin_hotel' 
+                    && data.roles.length == '2' 
+                    && data.etablissement != 'Tropical wood' 
+                    && data.etablissement != "ENAC Transport"
+                )
+                {
+                    app.typeAdmin = 'admin_hotel';
+                    app.hotelEntreprise = data.etablissement;
+                }
+                else if(
+                    data.profile == 'admin_hotel' 
+                    && data.roles.length == '1'
+                    && data.receptionniste == 'oui'
+                    && data.etablissement != 'Tropical wood' 
+                    && data.etablissement != "ENAC Transport"
+                )
+                {
+                    app.typeAdmin = 'receptionniste_hotel';
+                    app.hotelEntreprise = data.etablissement;
+                }
+                else if(
+                    data.profile == 'admin_hotel' 
+                    && data.roles.length == '1'
+                    && data.comptable == 'oui'
+                    && data.etablissement != 'Tropical wood' 
+                    && data.etablissement != "ENAC Transport"
+                )
+                {
+                    app.typeAdmin = 'comptable_hotel';
+                    app.hotelEntreprise = data.etablissement;
+                }
+                else if(
+                    data.profile == 'admin_tropicalwood'   
+                    && data.etablissement == "Tropical wood"
+                ){
+                    app.typeAdmin = 'admin_tropicalwood';
+                    app.hotelEntreprise = data.etablissement;
+                }
+                else if(
+                    data.profile == 'admin_enac_transport'   
+                    && data.etablissement == "ENAC Transport"
+                ){
+                    app.typeAdmin = 'admin_enac_transport';
+                    app.hotelEntreprise = data.etablissement;
+                }
+                //console.log(app.hotelEntreprise)
+                $("#choix_role").val(app.typeAdmin);
+                $("#choix_role").trigger('change');
+                $("#choix_hotel").val(app.hotelEntreprise);
+                $("#choix_hotel").trigger('change');
+                
+                app.nomUser = data.nom;
+                app.prenomUser = data.prenom;
+                app.emailUser = null;
+                app.passUser = null;
+                // on cache les input pass et mail 
+                app.editUserNoEmailPass = true;
+                app.editUserId = id;
+                //console.log(app.typeAdmin)
+                $('.selectpicker').selectpicker('refresh');
+                document.body.scrollTop = document.documentElement.scrollTop = 0;
+            })
+        }
+
+    })
+   
+   </script>
+{% endblock %}

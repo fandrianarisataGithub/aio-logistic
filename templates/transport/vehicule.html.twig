@@ -1,0 +1,1185 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Véhicule{% endblock %}
+
+{% block body %}
+<div id="app">
+    <div class="title-page-trans">
+        <h1 class="fs-primary">Liste véhicule</h1>
+    </div>
+    <div class="array">
+        <div class="array-head">
+            <div class="input-content input-search-trans-array">
+                <span class="fa fa-search"></span><input id="mySearchText" type="text" placeholder="Recherche">
+            </div>
+            {# <div class="input-date-filter">
+                <span class="icone_calenadr">
+                    <img src="{{ asset('images/icones_trans/calendar.svg') }}" alt="calendar">
+                </span>
+                <input type="date" id="date1">
+                <span>-</span>
+                <input type="date" id="date2">
+                <button class="btn-filter">Filtrer</button>
+            </div> #}
+            <div class="maj-export">
+                <a data-toggle="modal" data-target="#modal-vehicule" href="#" id="maj"  
+                    {% if app.user.transportVehicule() == '1' %}
+                        class="fond-lightOrange btn-maj nouveau-vehicule"
+                    {% else %}
+                        class="fond-lightOrange btn-maj nouveau-vehicule d-none"
+                    {% endif %}
+                >
+                    <span><img src="{{ asset('images/icones_trans/maj.svg') }}" alt="maj"></span>
+                    <span>Nouveau véhicule</span>
+                </a>
+            </div>
+        </div>
+        <div class="trans_tableau">
+            <table id="tableau-vehicule" class="table" style="width:100%" >
+                <thead>
+                    <tr>
+                        <th class="immatricule">IMMATRICULATION</th>
+                        <th class="centre">CENTRE</th>
+                        <th class="marque">MARQUE</th>
+                        <th class="se">SOURCE D'ENERGIE</th>
+                        <th class="cr">CAPACITE RESERVOIR</th>
+                        <th class="dmec">DATE MEC</th>
+                        <th class="tv">TYPE VEHICULE</th>
+                        <th class="action"></th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-vehicule-load">
+                    {#<tr>
+                        <td  class="immatricule">0604TBE</td>
+                        <td class="centre">ENAC TANA</td>
+                        <td class="marque">RENAULT DX I</td>
+                        <td class="se">DIESEL</td>
+                        <td class="date-heure">400</td>
+                        <td class="cr">TRACTEUR</td>
+                        <td class="action">
+                            <a href="#">
+                                <span class="fa fa-pencil"></span>
+                            </a>
+                            <a href="#">
+                                <span class="fa fa-trash-o"></span>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td  class="immatricule">0604TBE</td>
+                        <td class="centre">ENAC TANA</td>
+                        <td class="marque">RENAULT DX I</td>
+                        <td class="se">DIESEL</td>
+                        <td class="date-heure">400</td>
+                        <td class="cr">TRACTEUR</td>
+                        <td class="action">
+                            <a href="#">
+                                <span class="fa fa-pencil"></span>
+                            </a>
+                            <a href="#">
+                                <span class="fa fa-trash-o"></span>
+                            </a>
+                        </td>
+                    </tr>#}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-vehicule" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title secondary-title">NOUVEAU VEHICULE</h2>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="form-new-vehicule" id="form-new-vehicule">
+                    <div class="d-flex justify-content-between form-modal">
+                        <div class="form-part">
+                            <div class="form-group">
+                                <label class="label-modal" for="">IMMATRICULATION</label>
+                                <input placeholder="XXXXTBE" type="text" class="input-modal" name="immatriculation" >
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">CENTRE</label>
+                                <input placeholder="ENAC TANA" type="text" class="input-modal" name="centre" >
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">MARQUE</label>
+                                <input placeholder="RENAULT DX I" type="text" class="input-modal" name="marque" >
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">SOURCE D'ENERGIE</label>
+                                <select
+                                    class="selectpicker" 
+                                    data-show-subtext="true" 
+                                    data-live-search="true" 
+                                    name="energie"
+                                    
+                                >
+                                    <option value="DIESEL">DIESEL</option>
+                                    <option value="ESSENCE">ESSENCE</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-part">
+                            <div class="form-group">
+                                <label class="label-modal"  for="">CAPACITE RESERVOIR</label>
+                                <input placeholder="400" type="text" class="input-modal" name="reservoir" >
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">DATE 1ère MEC</label>
+                                <input type="date" class="input-modal" name="date_circulation">
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">TYPE VEHICULE</label>
+                                <input placeholder="TRACTEUR" type="text" class="input-modal" name="type" >
+                            </div>
+                            <div class="add-imge grey-input">
+                                <div class="preview">
+                                    <img style="width:52px; height:42px;" src="{{ asset('images/icones_trans/icone-add-image.svg') }}" alt="icone">
+                                    <span class="label-image">
+                                        IMPORTER PHOTO <br>
+                                        DU VEHICULE
+                                    </span>
+                                    <img v-if="image_url" :src="image_url" alt="pdp" id="image-choosen">
+                                </div>
+                                <input @change="onFileChange" type="file" name="image" id="image">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer no-padding-right">
+                        <button type="submit" id="submit-vehicule" class="btn btn-primary">VALIDER</button>
+                    </div>
+                </form>
+            </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-fiche-vehicule" tabindex="-1" role="dialog" aria-labelledby="exemple-fiche-vehicule" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="title-modal" class="modal-title secondary-title">FICHE VEHICULE</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-fiche d-flex">
+                    <div class="img col-sm-5">
+                        <img id="image-modal" src="" alt="">
+                    </div>
+                    <div class="description col-sm-7">
+                        <ul>
+                            <li class="matricule">
+                                <span id="immatriculation-modal"></span>
+                            </li>
+                            <li class="marque">
+                                <span id="marque-modal"></span>
+                            </li>
+                            <li class="centre">
+                                <span id="centre-modal"></span>
+                            </li>
+                        </ul> 
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-body-nav">
+                        <nav class="array-nav">
+                            <ul class="d-flex justify-content-between">
+                                <li><span @click="chooseVoyage" :class="{active : isVoyage}">VOYAGE EFFECTUES</span></li>
+                                <li><span @click="chooseCarburant" :class="{active : isCarburant}">CARBURANT</span></li>
+                                <li><span @click="choosePneus" :class="{active : isPneus}">PNEUS</span></li>
+                                <li><span @click="chooseEntretien" :class="{active : isEntretien}">ENTRETIEN</span></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="modal-body-arrays array">
+                        <div class="trans_tableau in-modal">
+                            <table v-show="isVoyage" class="table table-in-modal" id="modal-array-voyage">
+                                <thead>
+                                    <tr>
+                                        <th class="chauffeur">CHAUFFEUR</th>
+                                        <th class="client">CLIENT</th>
+                                        <th class="ot">OT</th>
+                                        <th class="date">DATE DEBUT</th>
+                                        <th class="date">DATE FIN</th>
+                                        <th class="trajet">TRAJET</th>
+                                        <th class="trajet">MONTANT</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-voyage">
+                                   
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="6">TOTAL</td>
+                                        <td id="total_montant_voyage" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isCarburant" class="table table-in-modal" id="modal-array-carburant">
+                                <thead>
+                                    <tr>
+                                        <th class="date">DATE/HEURE</th>
+                                        <th class="station">STATION</th>
+                                        <th class="kilometrage">KILOMETRAGE</th>
+                                        <th class="chauffeur">CHAUFFEUR</th>
+                                        <th class="client">CLIENT</th>
+                                        <th class="type">TYPE</th>
+                                        <th class="litrage">LITRAGE</th>
+                                        <th class="fond">FOND</th>
+                                        <th class="fond">CONSO</th>
+                                        <th class="station">TRAJET</th>
+                                        <th class="montant">MONTANT</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-carburant">
+                                    
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="10">TOTAL</td>
+                                        <td id="total_montant_carburant" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isPneus" class="table table-in-modal" id="modal-array-pneus">
+                                <thead>
+                                    <tr>
+                                        <th class="date">DATE/HEURE</th>
+                                        <th class="kilometrage">KILOMETRAGE</th>
+                                        <th class="num_serie">N° SERIE</th>
+                                        <th class="marque">MARQUE</th>
+                                        <th class="ref">REFERENCE</th>
+                                        <th class="position">POSITION</th>
+                                        <th>MONTANT</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-pneu">
+                                    
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="6">TOTAL</td>
+                                        <td id="total_montant_pneu" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isEntretien" class="table table-in-modal" id="modal-array-entretien">
+                                <thead>
+                                    <tr>
+                                        <th class="date">DATE DEBUT</th>
+                                        <th class="date">DATE FIN</th>
+                                        <th class="km">KM</th>
+                                        <th class="ot">OT</th>
+                                        <th class="motif">MOTIF</th>
+                                        <th class="pieces">PIECES</th>
+                                        <th class="intyervenant">INTERVENANT</th>
+                                        <th class="commentaire">COMMENTAIRE</th>
+                                        <th class="montant">COUT TOTAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="body-entretien"> 
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="8">TOTAL</td>
+                                        <td id="total_montant_intervenation" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {# modal detail pièce #}
+    <div class="modal fade" id="modal-piece-show" tabindex="-1" role="dialog" aria-labelledby="modalentree" aria-hidden="true">
+        <div class="modal-dialog mb-50" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title secondary-title">DETAILS PIECES</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body modal-body-sortie no-mt">
+                    <table id="table_piece_hist" class="table table_in_modal" style="width:100%" >
+                        <thead>
+                        <tr>
+                            <th class="piece">PIECES</th>
+                            <th class="quantity">Qté</th>
+                            <th class="price">PRIX UNITAIRES(HT)</th>
+                            <th class="price">PRIX TOTAL (TTC)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="2"></td>
+                            <td class="price modal-td-foot text-end" colspan="1">TOTAL TTC : </td>
+                            <td class="price  modal-td-foot"><span class="motant">0</span><span class="unite_ar"></span></td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {# modal piece #}
+    <div class="modal fade" id="modal-vehicule-edit" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title secondary-title">EDITER VEHICULE</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form class="form-edit-vehicule" id="form-edit-vehicule">
+                        <div class="d-flex justify-content-between form-modal">
+                            <div class="form-part">
+                                <div class="form-group">
+                                    <label class="label-modal" for="">IMMATRICULATION</label>
+                                    <input placeholder="XXXXTBE" type="text" class="input-modal" name="immatriculation_edit" required>
+                                    <input type="hidden" name="id_edit">
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">CENTRE</label>
+                                    <input placeholder="ENAC TANA" type="text" class="input-modal" name="centre_edit" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">MARQUE</label>
+                                    <input placeholder="RENAULT DX I" type="text" class="input-modal" name="marque_edit" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">SOURCE D'ENERGIE</label>
+                                    <select
+                                        class="selectpicker" 
+                                        data-show-subtext="true" 
+                                        data-live-search="true" 
+                                        name="energie_edit"
+                                        id="select_energie_edit"
+                                        required
+                                    >
+                                        <option value="DIESEL">DIESEL</option>
+                                        <option value="ESSENCE">ESSENCE</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-part">
+                                <div class="form-group">
+                                    <label class="label-modal"  for="">CAPACITE RESERVOIR</label>
+                                    <input placeholder="400" type="text" class="input-modal" name="reservoir_edit" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">DATE 1ère MEC</label>
+                                    <input type="date" class="input-modal" name="date_circulation_edit"required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">TYPE VEHICULE</label>
+                                    <input placeholder="TRACTEUR" type="text" class="input-modal" name="type_edit" required>
+                                </div>
+                                <div class="add-imge grey-input">
+                                    <div class="preview">
+                                        <img style="width:52px; height:42px;" src="{{ asset('images/icones_trans/icone-add-image.svg') }}" alt="icone">
+                                        <span class="label-image">
+                                        IMPORTER PHOTO <br>
+                                        DU VEHICULE
+                                    </span>
+                                        <img v-if="image_url_edit" :src="image_url_edit" alt="pdp" id="image-choosen-edit">
+                                    </div>
+                                    <input @change="onFileChangeEdit" type="file" name="image">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" id="submit-vehicule-edit" class="btn btn-primary">MODIFIER</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js'></script>
+    <script src='https://cdn.datatables.net/plug-ins/1.11.4/sorting/datetime-moment.js'></script>
+    <script>
+        // jquery
+        $(document).ready(function(){
+            $('.selectpicker').selectpicker();
+            $.fn.dataTable.moment( 'DD/MM/YYYY' );
+            var table = $('#tableau-vehicule').DataTable({
+                "language": {
+                    "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                    "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                    "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                    "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                    "sInfoPostFix": "",
+                    "sInfoThousands": ",",
+                    "sLengthMenu": "Afficher _MENU_ éléments",
+                    "sLoadingRecords": "Chargement...",
+                    "sProcessing": "Traitement...",
+                    "sSearch": "Rechercher :",
+                    "sZeroRecords": "Aucun élément correspondant trouvé",
+                    "oPaginate": {
+                        "sFirst": "Premier",
+                        "sLast": "Dernier",
+                        "sNext": "Suivant",
+                        "sPrevious": "Précédent"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                        "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                    },
+                    "select": {
+                        "rows": {
+                            "_": "%d lignes sélectionnées",
+                            "0": "Aucune ligne sélectionnée",
+                            "1": "1 ligne sélectionnée"
+                        }
+                    }
+                },
+				"ajax" : {
+                    url : "/profile/vehicule/list",
+                    type : 'POST',
+                    data: function(d){
+                        d.date1 = $('#date1').val();
+                        d.date2 = $('#date2').val();
+                    },
+                    // success : function(response){
+                    //     alert(response);
+                    // }, 
+                    // error : function(){
+                    //     alert('erreur server');
+                    // },
+                    "dataSrc":"",
+						
+				},
+                columns: [
+                    { data: 'immatriculation' },
+                    { data: 'centre' },
+                    { data: 'marque' },
+                    { data: 'energie' },
+                    { data: 'reservoir' },
+                    { data: 'date' },
+                    { data: 'type' },
+                ],
+                "columnDefs": [
+                    {
+                    "targets": -1,
+                    "data": null,
+                    "defaultContent": "<a href=\"#\">\n" +
+                        "                                <span class=\"fa fa-pencil edit\"></span>\n" +
+                        "                            </a>\n" +
+                        "                            <a href=\"#\">\n" +
+                        "                                <span class=\"fa fa-trash-o delete\"></span>\n" +
+                        "                            </a>"
+                    },
+                    { className: "immatriculation", "targets": [0] },
+                    { className: "centre", "targets": [1] },
+                    { className: "marque", "targets": [2] },
+                    { className: "se", "targets": [3] },
+                    { className: "cr", "targets": [4] },
+                    { className: "dmc", "targets": [5] },
+                    { className: "type", "targets": [6] },
+                    { className: `action 
+                            {% if app.user.getTransportVehicule() == '1' %}
+                                enable-link
+                            {% else %}
+                                 disable-link
+                            {% endif %}`, "targets": [7] },
+                    ],
+                "createdRow": function( row, data, dataIndex ) {
+                    $(row).attr('fiche',"vehicule");
+                    $(row).attr('data-id', data.id)
+                },
+                //annule le tri
+                order : [[0 , 'desc']],
+                ordering : true, 
+                searching:true,
+                responsive: true,
+                scrollY: false,
+                scrollX: true,
+                scrollCollapse: true,
+                paging: true,
+                autoFill: true
+            });
+            new $.fn.dataTable.FixedHeader(table);
+            $('#mySearchText').on( 'keyup', function () {
+                table.search($(this).val()).draw();
+            });
+            var forms = document.getElementsByClassName('form-new-vehicule');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault(false);
+                    if (form.checkValidity() === false) {;
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }else{
+                        //var data = $('form.form-new-vehicule').serializeArray();
+                        var myform =  document.getElementById('form-new-vehicule'); // You need to use standard javascript object here
+                        var formData = new FormData(myform);
+                       
+                        $.ajax({
+                            type: "POST",
+                            url: "/profile/vehicule/new",
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            traditional: true,
+                            beforeSend: function(){
+                                $('#submit-vehicule').html('PATIENTER...');
+                                $('#submit-vehicule').prop('disabled',true);
+                            },
+                            success: function(data) {
+                                if("success" == data.value){
+                                    $('#submit-vehicule').html('VALIDER');
+                                    $('#submit-vehicule').prop('disabled',false);
+                                    $('form.form-new-vehicule').trigger("reset");
+                                    app.image_url = null;
+                                    table.ajax.reload(function(response){
+                                        $('#modal-vehicule').modal('toggle');
+                                    }, false);
+                                }else{
+                                    alert("L'image que vous avez selectionner n'est pas valide");
+                                }
+                            },
+                        });
+                    }
+                });
+            })
+            var forms_2 = document.getElementsByClassName('form-edit-vehicule');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms_2, function(form_2) {
+                form_2.addEventListener('submit', function(event_2) {
+                    event_2.preventDefault(false);
+                    if (form_2.checkValidity() === false) {;
+                        event_2.preventDefault();
+                        event_2.stopPropagation();
+                    }else{
+                        var myform =  document.getElementById('form-edit-vehicule'); // You need to use standard javascript object here
+                        var data = new FormData(myform);
+                        $.ajax({
+                            type: "POST",
+                            url: "/profile/vehicule/edit",
+                            data: data,
+                            processData: false,
+                            contentType: false,
+                            traditional: true,
+                            beforeSend: function(){
+                                $('#submit-vehicule-edit').html('PATIENTER...');
+                                $('#submit-vehicule-edit').prop('disabled',true);
+                            },
+                            success: function(data) {
+                                if("success" == data.value){
+                                    $('#submit-vehicule-edit').html('MODIFIER');
+                                    $('#submit-vehicule-edit').prop('disabled',false);
+                                    $('form.form-edit-vehicule').trigger("reset");
+                                    table.ajax.reload(function(response){
+                                        $('#modal-vehicule-edit').modal('toggle');
+                                    }, false);
+                                }
+                            }
+                        });
+                    }
+                });
+            })
+            $('#tableau-vehicule tbody').on( 'click', 'span.edit', function () {
+                var data = table.row( $(this).parents('tr') ).data();
+                var dt = data.date ? data.date.split('/') : '';
+                var date = dt[2] +"-"+ dt[1] +"-"+ dt[0];
+                $('input[name=immatriculation_edit]').val(data.immatriculation);
+                $('input[name=centre_edit]').val(data.centre);
+                $('input[name=marque_edit]').val(data.marque);
+                $('#select_energie_edit').val(data.energie);
+                $('#select_energie_edit').trigger('change');
+                $('input[name=reservoir_edit]').val(data.reservoir);
+                $('input[name=date_circulation_edit]').val(date);
+                $('input[name=type_edit]').val(data.type);
+                $('input[name=id_edit]').val($(this).parents('tr').data('id'));
+                var imagePath = "{{ asset('uploads/vehicules/')}}";
+                if(data.image){
+                    app.$data.image_url_edit = imagePath + data.image;
+                }else{
+                    app.$data.image_url_edit = null;
+                }
+                $('#modal-vehicule-edit').modal('toggle');
+            } );
+            $('#tableau-vehicule tbody').on( 'click', 'span.delete', function (e) {
+                var id = $(this).parents('tr').data('id');
+                if (confirm("Voulez vous vraiment supprimer "+$(this).parents().parents().parents().children().first().text()+"?")) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/profile/vehicule/remove",
+                        data: {id: id},
+                        success: function(data) {
+                            if("success" == data.value){
+                                table.ajax.reload(function(response){
+                                    
+                                }, false);
+                            }
+                        },
+                    });
+                }
+            } );
+
+            $('.btn-filter').click(function () {
+                table.ajax.reload(function(response){
+
+                }, false);
+            })
+        })
+        // vue affichage des tableaux dans moadal
+        const app = new Vue({
+            el:"#app",
+            delimiters : ['${', '}'],
+            data(){
+                return{
+                        isVoyage : true,
+                        isCarburant : false,
+                        isPneus : false,
+                        isEntretien : false,
+                        image_url : null,
+                        image_url_edit : null,
+                        tabFicheVehicule : [],
+                        dataVehicule : [],
+                        isLoaded : false,
+                        immatriculation : '',
+                        marque : '',
+                        centre : '',
+                        image : '',
+                        imageEdit : ''
+                }
+            },
+            methods : {
+                loadDataVehicule(id){
+                    axios.interceptors.request.use((config) => {
+						this.isLoaded = true;
+						return config;
+					}, (error) => {
+						return Promise.reject(error);
+					});
+					axios.interceptors.response.use((response) => {
+						this.isLoaded = false;
+						return response;
+					}, (error) => {
+						return Promise.reject(error);
+					});
+                    var data = {
+                        'vehicule_id' : id
+                    }
+                    axios.post('/profile/load_vehicule_id', data)
+                    .then((response) => {
+                        this.immatriculation = response.data[0].immatriculation;
+                        this.marque = response.data[0].vehicule_marque;
+                        this.centre = response.data[0].vehicule_centre;
+                        this.image = response.data[0].vehicule_image;
+                    }, (error) => {
+                        console.error("Erreur load imatriculation");
+                    })
+                    .then((response) => {
+                         $("#modal-fiche-vehicule").modal('show');
+                    });
+                },
+                allSetToFalse(){
+                    this.isVoyage = false;
+                    this.isCarburant = false;
+                    this.isPneus = false;
+                    this.isEntretien = false
+                },
+                chooseVoyage(){
+                    this.allSetToFalse();
+                    this.isVoyage = true;
+                },
+                 chooseCarburant(){
+                    this.allSetToFalse();
+                    this.isCarburant = true;
+                },
+                 choosePneus(){
+                    this.allSetToFalse();
+                    this.isPneus = true;
+                }, chooseEntretien(){
+                    this.allSetToFalse();
+                    this.isEntretien = true;
+                },
+                onFileChange(e){
+                    const file = e.target.files[0];
+                    this.image_url = URL.createObjectURL(file);
+                },
+                onFileChangeEdit(e){
+                    const file = e.target.files[0];
+                    this.image_url_edit = URL.createObjectURL(file);
+                },
+                loadVehicule(id){
+                    let self = this; //<---added
+                    var data = {
+                        'vehicule_id' : id
+                    }
+                    $.ajax({
+                        url : "/profile/load_vehicule_id",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+                            
+                            var imagePath = "{{ asset('uploads/vehicules/')}}";
+                            $('#immatriculation-modal').text(data[0].immatriculation)
+                            $('#marque-modal').text(data[0].vehicule_marque)
+                            $('#centre-modal').text(data[0].vehicule_centre)
+                            data[0].vehicule_image ? $("#image-modal").attr('src', imagePath + data[0].vehicule_image) : $("#image-modal").attr('src','');
+                        },
+                        complete : function(data){
+                            $('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                    $.ajax({
+                        url : "/profile/load_vehicule",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+                           
+                            //voyage
+                            var htmlVoyage = '';
+                            var totalVoyage = 0;
+                            data.ficheVoyage.forEach((item, index) => {
+                                totalVoyage += parseInt(item.voyage_montant);
+                                htmlVoyage += `
+                                    <tr>
+                                        <td class="chauffeur">${ item.chauffeur_voyage ? item.chauffeur_voyage : '' }</td>
+                                        <td class="client">${ item.client_voyage ? item.client_voyage : '' }</td>
+                                        <td class="ot">${ item.voyage_ot ? item.voyage_ot : '' }</td>
+                                        <td class="date">${ item.voyage_dd ? self.splitDate(item.voyage_dd.date)  : '' }</td>
+                                        <td class="date">${ item.voyage_df ? self.splitDate(item.voyage_df.date) : '' }</td>
+                                        <td class="trajet">${ item.voyage_trajet ? item.voyage_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.voyage_montant ? self.formatCurency(item.voyage_montant) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_voyage").text(self.formatCurency(totalVoyage))
+                            $("#body-voyage").html(htmlVoyage);
+                           
+                            //carburant 
+                            var htmlCarburant = '';
+                            var totalCarburant = 0;
+                            data.ficheCarburant.forEach((item, index) => {
+                                totalCarburant += parseInt(item.carb_montant);
+                                htmlCarburant += `
+                                    <tr>
+                                        <td class="date">${ item.date_carb ? self.splitDate(item.date_carb.date) : '' }</td>
+                                        <td class="station">${ item.carb_station ? item.carb_station  : '' }</td>
+                                        <td class="kilometrage">${ item.carb_kilometrage ? self.formatKilometrage(item.carb_kilometrage) : '' }</td>
+                                        <td class="chauffeur">${ item.carb_sortie_chauffeur ? item.carb_sortie_chauffeur : '' }</td>
+                                        <td class="client">${ item.carb_client ? item.carb_client : '' }</td>
+                                        <td class="type">${ item.carb_type ? item.carb_type : '' }</td>
+                                        <td class="litrage">${ item.carb_litrage ? self.formatLitrage(item.carb_litrage) : '' }</td>
+                                        <td class="fond">${ item.carb_fond ? self.formatLitrage(item.carb_fond) : '' }</td>
+                                        <td class="fond">${ item.conso ? item.conso : '' }</td>
+                                        <td class="trajet">${ item.carb_trajet ? item.carb_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.carb_montant ? self.formatCurency(item.carb_montant) : ''}</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_carburant").text(self.formatCurency(totalCarburant));
+                            $("#body-carburant").html(htmlCarburant);
+                            
+                            //pneu
+                            var htmlPneu = '';
+                            var totalPneu = 0;
+                            if(data.fichePneu.length > 0){
+                                data.fichePneu.forEach((item, index) => {
+                                    totalPneu += item.pneu_montant != null ? parseInt(item.pneu_montant.replaceAll(' ', '')) : 0;
+                                    htmlPneu += `
+                                        <tr>
+                                            <td class="date">${ item.date_pneu ? self.splitDate(item.date_pneu.date) : '' }</td>
+                                            <td class="kilometrage">${ item.pneu_kilometrage ? self.formatKilometrage(item.pneu_kilometrage) : '' }</td>
+                                            <td class="num_serie">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="marque">${ item.pneu_marque ? item.pneu_marque : '' }</td>
+                                            <td class="ref">${ item.pneu_position ? item.pneu_position : '' }</td>
+                                            <td class="position">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="montant-sold">${ item.pneu_montant ? self.formatCurency(item.pneu_montant.replaceAll(' ', '')) : '' }</td>
+                                        </tr>
+                                    `;
+                                })
+                            }
+                            $("#total_montant_pneu").text(self.formatCurency(totalPneu))
+                            $("#body-pneu").html(htmlPneu);
+                            
+
+                            var htmlInt = '';
+                            var totalInt = 0;
+                            data.fichePiece.forEach((item, index) => {
+                                totalInt += parseInt(item.int_total);
+                                htmlInt += `
+                                    <tr>
+                                        <td class="date">${ item.int_date_fin ? self.splitDate(item.int_date_fin.date) : '' }</td>
+                                        <td class="date">${ item.int_date_debut ? self.splitDate(item.int_date_debut.date) : '' }</td>
+                                        <td class="km">${ item.int_km ? item.int_km : '' }</td>
+                                        <td class="ot">${ item.int_ot ? item.int_ot : '' }</td>
+                                        <td class="motif">${ item.int_motif ? item.int_motif : '' }</td>
+                                        <td class="pieces">
+                                            <span data-intervention="`+ item.intervention_id +`" class="npiece" style="${ item.nbr_piece_intervention ? 'display : block;' : 'display:none;' }">
+                                                ${ item.nbr_piece_intervention ? item.nbr_piece_intervention : 0 } pièces<i class="fa fa-detail"></i>
+                                            </span>
+                                        </td>
+                                        <td class="intervenant">${ item.intervenant ? item.intervenant : '' }</td>
+                                        <td class="commentaire">${ item.int_conmmentaire ? item.int_conmmentaire: '' }</td>
+                                        <td class="montant-sold">${ item.int_total ? self.formatCurency(item.int_total) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_intervenation").text(self.formatCurency(totalInt))
+                            $("#body-entretien").html(htmlInt);
+                        },
+                        complete : function(data){
+                            //$('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                },
+                splitDate(date){
+                    var dateS = date.split('.');
+                    return dateS[0];
+                },
+                formatCurency(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " Ar" ;
+                    }else{
+                        return 0;
+                    }
+                    
+                },
+                formatLitrage(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " L" ;
+                    }else{
+                        return 0;
+                    }
+                    
+                },
+                formatKilometrage(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " KM" ;
+                    }else{
+                        return 0;
+                    }
+                    
+                },
+            },
+            mounted(){
+                // Afficher la fiche véhicule
+                
+            }
+        })
+
+        $(document).ready(function () {
+            var format = new Intl.NumberFormat();
+            var table2 = $('#table_piece_hist').DataTable({
+                "language": {
+                    "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                    "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                    "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                    "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                    "sInfoPostFix": "",
+                    "sInfoThousands": ",",
+                    "sLengthMenu": "Afficher _MENU_ éléments",
+                    "sLoadingRecords": "Chargement...",
+                    "sProcessing": "Traitement...",
+                    "sSearch": "Rechercher :",
+                    "sZeroRecords": "Aucun élément correspondant trouvé",
+                    "oPaginate": {
+                        "sFirst": "Premier",
+                        "sLast": "Dernier",
+                        "sNext": "Suivant",
+                        "sPrevious": "Précédent"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                        "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                    },
+                    "select": {
+                        "rows": {
+                            "_": "%d lignes sélectionnées",
+                            "0": "Aucune ligne sélectionnée",
+                            "1": "1 ligne sélectionnée"
+                        }
+                    }
+                },
+                //annule le tri
+                order : [[0 , 'desc']],
+                ordering : true,
+                searching:true,
+                responsive: true,
+                scrollY: false,
+                scrollX: true,
+                scrollCollapse: true,
+                paging: true,
+                autoFill: true
+            });
+            $(document).on('click', "[fiche=vehicule] td:not(:last-child)", function(){
+                var isVehiculerole = '{{ app.user.getTransportVehicule() }}';
+                if(isVehiculerole == '1'){
+                    let vehiculeId = $(this).parent().attr('data-id'); 
+                    app.$options.methods.loadVehicule(vehiculeId)       
+                }
+            })
+            $(document).on('click', '.npiece', function(){
+                var int_id = $(this).attr('data-intervention');
+                /*$.get("/profile/trans/load_liste_piece_int", { int_id : int_id }, function(data){
+                    $("#body-entretien-piece-liste").html(data);
+                    
+                    $('#modal-piece-show').modal('show')
+                })*/
+                if($.fn.dataTable.isDataTable( '#table_piece_hist' )){
+                    table2.destroy();
+                    table2 = $('#table_piece_hist').DataTable({
+                        "language": {
+                            "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                            "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                            "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                            "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                            "sInfoPostFix": "",
+                            "sInfoThousands": ",",
+                            "sLengthMenu": "Afficher _MENU_ éléments",
+                            "sLoadingRecords": "Chargement...",
+                            "sProcessing": "Traitement...",
+                            "sSearch": "Rechercher :",
+                            "sZeroRecords": "Aucun élément correspondant trouvé",
+                            "oPaginate": {
+                                "sFirst": "Premier",
+                                "sLast": "Dernier",
+                                "sNext": "Suivant",
+                                "sPrevious": "Précédent"
+                            },
+                            "oAria": {
+                                "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                                "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                            },
+                            "select": {
+                                "rows": {
+                                    "_": "%d lignes sélectionnées",
+                                    "0": "Aucune ligne sélectionnée",
+                                    "1": "1 ligne sélectionnée"
+                                }
+                            }
+                        },
+                        "ajax" : {
+                            url : "/profile/intervention/listpiece",
+                            type : 'POST',
+                            data: function(d){
+                                d.id = int_id;
+                            },
+                            // success : function(response){
+                            //     alert(response);
+                            // }, 
+                            // error : function(){
+                            //     alert('erreur server');
+                            // },
+                            "dataSrc":"",
+                                
+                        },
+                        columns: [
+                            { data: 'designation' },
+                            { data: 'qte' },
+                            { data: 'prix' },
+                            { data: 'total' },
+                        ],
+                        "columnDefs": [
+                            {
+                                "targets": 2,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            {
+                                "targets": 3,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            { className: "td-in-modal piece", "targets": [0] },
+                            { className: "td-in-modal quantity", "targets": [1] },
+                            { className: "td-in-modal price", "targets": [2] },
+                            { className: "td-in-modal price", "targets": [3] },
+                        ],
+                        "footerCallback": function ( row, data, start, end, display ) {
+                            var api = this.api();
+
+                            // Remove the formatting to get integer data for summation
+                            var intVal = function ( i ) {
+                                return typeof i === 'string' ?
+                                    parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                                    typeof i === 'number' ?
+                                        i : 0;
+                            };
+
+                            // Total over all pages
+                            /*total = api
+                                .column( 8 )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0);*/
+
+                            // Total over this page
+                            pageTotal = api
+                                .column( 3, { page: 'current'} )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0 );
+
+                            // Update footer
+                            $( api.column( 3 ).footer() ).html(
+                                '<span class="montant">'+format.format(pageTotal)+'</span> <span class="unite_ar">Ar</span>'
+                            );
+                        },
+                        //annule le tri
+                        order : [[0 , 'desc']],
+                        ordering : true,
+                        searching:true,
+                        responsive: true,
+                        scrollY: false,
+                        scrollX: true,
+                        scrollCollapse: true,
+                        paging: true,
+                        autoFill: true
+                    });
+                }else{
+                    table2 = $('#table_piece_hist').DataTable({
+                        "language": {
+                            "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                            "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                            "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                            "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                            "sInfoPostFix": "",
+                            "sInfoThousands": ",",
+                            "sLengthMenu": "Afficher _MENU_ éléments",
+                            "sLoadingRecords": "Chargement...",
+                            "sProcessing": "Traitement...",
+                            "sSearch": "Rechercher :",
+                            "sZeroRecords": "Aucun élément correspondant trouvé",
+                            "oPaginate": {
+                                "sFirst": "Premier",
+                                "sLast": "Dernier",
+                                "sNext": "Suivant",
+                                "sPrevious": "Précédent"
+                            },
+                            "oAria": {
+                                "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                                "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                            },
+                            "select": {
+                                "rows": {
+                                    "_": "%d lignes sélectionnées",
+                                    "0": "Aucune ligne sélectionnée",
+                                    "1": "1 ligne sélectionnée"
+                                }
+                            }
+                        },
+                        "ajax" : {
+                            url : "/profile/intervention/listpiece",
+                            type : 'POST',
+                            data: function(d){
+                                d.id = int_id;
+                            },
+                            // success : function(response){
+                            //     alert(response);
+                            // }, 
+                            // error : function(){
+                            //     alert('erreur server');
+                            // },
+                            "dataSrc":"",
+                                
+                        },
+                        columns: [
+                            { data: 'designation' },
+                            { data: 'qte' },
+                            { data: 'prix' },
+                            { data: 'total' },
+                        ],
+                        "columnDefs": [
+                            {
+                                "targets": 2,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            {
+                                "targets": 3,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            { className: "td-in-modal piece", "targets": [0] },
+                            { className: "td-in-modal quantity", "targets": [1] },
+                            { className: "td-in-modal price", "targets": [2] },
+                            { className: "td-in-modal price", "targets": [3] },
+                        ],
+                        "footerCallback": function ( row, data, start, end, display ) {
+                            var format = new Intl.NumberFormat();
+                            var api = this.api();
+
+                            // Remove the formatting to get integer data for summation
+                            var intVal = function ( i ) {
+                                return typeof i === 'string' ?
+                                    parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                                    typeof i === 'number' ?
+                                        i : 0;
+                            };
+
+                            // Total over all pages
+                            /*total = api
+                                .column( 8 )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0);*/
+
+                            // Total over this page
+                            pageTotal = api
+                                .column( 3, { page: 'current'} )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0 );
+
+                            // Update footer
+                            $( api.column( 3 ).footer() ).html(
+                                '<span class="montant">'+format.format(pageTotal)+'</span> <span class="unite_ar">Ar</span>'
+                            );
+                        },
+                        //annule le tri
+                        order : [[0 , 'desc']],
+                        ordering : true,
+                        searching:true,
+                        responsive: true,
+                        scrollY: false,
+                        scrollX: true,
+                        scrollCollapse: true,
+                        paging: true,
+                        autoFill: true
+                    });
+                }
+                $('#modal-piece-show').on('shown.bs.modal', function() {
+                    table2.columns.adjust()
+                })
+                $("#modal-piece-show").modal('show');              
+            })
+            
+        });
+    </script>
+{% endblock %}

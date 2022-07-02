@@ -1,0 +1,1309 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Voyages{% endblock %}
+
+{% block body %}
+<div id="app">
+    <div class="title-page-trans">
+        <h1 class="fs-primary">Données des voyages effectués</h1>
+    </div>
+    <div class="array">
+        <div class="array-head">
+            <div class="part d-flex">
+                <div class="input-content input-search-trans-array">
+                    <span class="fa fa-search"></span><input id="mySearchText" type="text" placeholder="Recherche">
+                </div>
+                <div class="input-date-filter">
+                    <span class="icone_calenadr">
+                        <img src="{{ asset('images/icones_trans/calendar.svg') }}" alt="calendar">
+                    </span>
+                    <input type="date" id="date1">
+                    <span>-</span>
+                    <input type="date" id="date2">
+                    <button class="btn-filter">Filtrer</button>
+                </div>
+            </div>
+            <div class="part d-flex">
+                <div class="maj-export">
+                    <a href="#" id="maj"  
+                        {% if app.user.getTransportVoyage() == '1' %}
+                           class="fond-lightOrange btn-maj"
+                        {% else %}
+                           class="fond-lightOrange btn-maj d-none"
+                        {% endif %}
+                    >
+                        <ion-icon name="add-outline"></ion-icon>
+                        <span>Inserer</span>
+                    </a>
+                    <a href="#" id="export" class="fond-lightGreen btn-maj">
+                        <span><img src="{{ asset('images/icones_trans/export.svg') }}" alt="export"></span>
+                        <span>Export Excel</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="trans_tableau">
+            <table id="tableau-voyage" class="table" style="width:100%" >
+                <thead>
+                    <tr>
+{#                        <th class="creation">CREATION</th>#}
+                        <th class="vehicule">VEHICULE</th>
+                        <th class="chauffeur">CHAUFFEUR</th>
+                        <th class="client">CLIENT</th>
+                        <th class="ot">OT</th>
+                        <th class="date-heure">DATE DEBUT</th>
+                        <th class="date-heure">DATE FIN</th>
+                        <th class="trajet">TRAJET</th>
+                        <th class="montant-ttc">MONTANT TTC</th>
+                        <th class="action"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#<tr>
+                        <td  class="vehicule">0604TBE</td>
+                        <td class="chauffeur">vererer</td>
+                        <td class="client">LPSA</td>
+                        <td class="ot">2024542</td>
+                        <td class="date-heure">07/01/22 - 12:00</td>
+                        <td class="date-heure">09/01/22 - 12:00</td>
+                        <td class="trajet">TANA-TVE-ABI</td>
+                        <td class="montant-ttc"><span class="montant">3400000</span> <span class="unite_ar">Ar</span></td>
+                        <td class="facture">
+                            <a href="#" class="link_facture"><span>Pièce jointe</span><span class="fa fa-info"></span></a>
+                        </td>
+                        <td class="action">
+                            <a href="#">
+                                <span class="fa fa-pencil"></span>
+                            </a>
+                            <a href="#">
+                                <span class="fa fa-trash-o"></span>
+                            </a>
+                        </td>
+                    </tr>#}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6">
+                        </td>
+                        <td colspan="1">
+                            TOTAL TTC :
+                        </td>
+                        <td colspan="1" style="text-align:start;">
+                            <span class="montant">0</span> <span class="unite_ar">Ar</span>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-facture" tabindex="-1" role="dialog" aria-labelledby="modalVoyage" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="impression d-flex justify-content-end align-items-center">
+                    {# inspiration pour combiner js et twig pour le download et print https://stackoverflow.com/questions/50287941/javascript-variable-in-a-twig-asset #}
+                        <a class="print-down download"
+                            href="{{ asset('uploads/facture_trans/facture.png') }}" 
+                            download="facture1.png" target="_blank"
+                        >
+                            <img src="{{ asset('images/icones_trans/download_fact.svg') }}" alt="download">
+                        </a>
+                        <a href="#" data-image="facture.png" class="print-down print">
+                            <img src="{{ asset('images/icones_trans/print_fact.svg') }}" alt="print">
+                        </a>
+                    </div>
+                   <div class="facture-content">
+                    <img src="{{ asset('uploads/facture_trans/facture.png')}}" alt="facture">
+                   </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-voyage" tabindex="-1" role="dialog" aria-labelledby="modalVoyage" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title secondary-title">NOUVEAU VOYAGE</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body modal-body-sortie no-mt">
+                    <form action="" class="d-flex justify-content-between form-modal form-new-voyage">
+                        <div class="form-part">
+                            <div class="form-group">
+                                <label class="label-modal" for="">VEHICULE</label>
+                                <select 
+                                    class="selectpicker" 
+                                    data-show-subtext="true" 
+                                    data-live-search="true"
+                                    name="vehicule"
+                                    id="select-vehicule"
+                                    data-size="5"
+                                    required
+                                >
+                                    <option value="">---CHOISISSEZ---</option>
+                                    {% for vehicule in vehicules %}
+                                        <option value="{{ vehicule['id'] }}">{{ vehicule['immatriculation'] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">CLIENT</label>
+                                <select
+                                    class="selectpicker"
+                                    data-show-subtext="true"
+                                    data-live-search="true"
+                                    name="client"
+                                    id="select-client"
+                                    data-size="5"
+                                    required
+                                >
+                                    <option value="">---CHOISISSEZ---</option>
+                                    {% for client in allClient %}
+                                        <option value="{{ client['nom'] }}">{{client['nom']}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">DATE DEBUT</label>
+                                <input type="datetime-local" class="input-modal" name="date_debut" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">TRAJET</label>
+                                <select
+                                    class="selectpicker"
+                                    data-show-subtext="true"
+                                    data-live-search="true"
+                                    name="trajet"
+                                    id="select-trajet"
+                                    data-size="5"
+                                    required
+                                >
+                                    <option value="">---CHOISISSEZ---</option>
+                                    {% for trajet in allTrajet %}
+                                        <option value="{{ trajet['nom'] }}" data-prix="{{ trajet['montant'] }}">{{trajet['nom']}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-part">
+                            <div class="fomr-part-input-liste">
+                                <div class="form-group">
+                                    <label class="label-modal"  for="">CHAUFFEUR</label>
+                                    <select 
+                                        class="selectpicker" 
+                                        data-show-subtext="true" 
+                                        data-live-search="true"
+                                        name="chauffeur"
+                                        id="select-chauffeur"
+                                        data-size="5"
+                                    >
+                                        <option value="">---CHOISISSEZ---</option>
+                                        {% for chauffeur in chauffeurs %}
+                                            <option value="{{ chauffeur['id'] }}">{{ chauffeur['nom'] }} - {{ chauffeur['matricule'] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal"  for="">OT</label>
+                                    <input placeholder="20220054" type="text" class="input-modal" name="ot" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">DATE FIN</label>
+                                    <input type="datetime-local" class="input-modal" name="date_fin" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">MONTANT TTC</label>
+                                    <input v-model="currencyMontantCreate" placeholder="1 000 000 Ar" type="text" class="input-modal" name="montant">
+                                </div>
+                            </div>
+                            <div class="button-valider">
+                                <button type="submit" id="new-voyage" class="btn btn-primary">VALIDER</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-voyage-edit" tabindex="-1" role="dialog" aria-labelledby="modalVoyage" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title secondary-title">MODIFIER VOYAGE</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body modal-body-sortie no-mt">
+                    <form action="" class="d-flex justify-content-between form-modal form-edit-voyage">
+                        <div class="form-part">
+                            <div class="form-group">
+                                <label class="label-modal" for="">VEHICULE</label>
+                                <select
+                                    class="selectpicker"
+                                    data-show-subtext="true"
+                                    data-live-search="true"
+                                    name="vehicule_edit"
+                                    id="select-vehicule-edit"
+                                    data-size="5"
+                                    required
+                                >
+                                    <option value="">---CHOISISSEZ---</option>
+                                    {% for vehicule in vehicules %}
+                                        <option value="{{ vehicule['id'] }}">{{ vehicule['immatriculation'] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">CLIENT</label>
+                                <input type="hidden" name="id_edit" required>
+                                <select
+                                    class="selectpicker"
+                                    data-show-subtext="true"
+                                    data-live-search="true"
+                                    name="client_edit"
+                                    id="select-client-edit"
+                                    data-size="5"
+                                    required
+                                >
+                                    <option value="">---CHOISISSEZ---</option>
+                                    {% for client in allClient %}
+                                        <option value="{{ client['nom'] }}">{{client['nom']}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">DATE DEBUT</label>
+                                <input type="datetime-local" class="input-modal" name="date_debut_edit" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">TRAJET</label>
+                                <select
+                                    class="selectpicker"
+                                    data-show-subtext="true"
+                                    data-live-search="true"
+                                    name="trajet_edit"
+                                    id="select-trajet-edit"
+                                    data-size="5"
+                                    required
+                                >
+                                    <option value="">---CHOISISSEZ---</option>
+                                    {% for trajet in allTrajet %}
+                                        <option value="{{ trajet['nom'] }}" data-prix="{{ trajet['montant'] }}">{{trajet['nom']}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-part">
+                            <div class="fomr-part-input-liste">
+                                <div class="form-group">
+                                    <label class="label-modal"  for="">CHAUFFEUR</label>
+                                    <select
+                                        class="selectpicker"
+                                        data-show-subtext="true"
+                                        data-live-search="true"
+                                        name="chauffeur_edit"
+                                        id="select-chauffeur-edit"
+                                        data-size="5"
+                                    >
+                                        <option value="">---CHOISISSEZ---</option>
+                                        {% for chauffeur in chauffeurs %}
+                                            <option value="{{ chauffeur['id'] }}">{{ chauffeur['nom'] }} - {{ chauffeur['matricule'] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal"  for="">OT</label>
+                                    <input placeholder="20220054" type="text" class="input-modal" name="ot_edit" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">DATE FIN</label>
+                                    <input type="datetime-local" class="input-modal" name="date_fin_edit" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">MONTANT TTC</label>
+                                    <input v-model="currencyMontantEdit" placeholder="1 000 000 Ar" type="text" class="input-modal" name="montant_edit">
+                                </div>
+                            </div>
+                            <div class="button-valider">
+                                <button type="submit" id="edit-voyage" class="btn btn-primary">MODIFIER</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-fiche-vehicule" tabindex="-1" role="dialog" aria-labelledby="exemple-fiche-vehicule" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="title-modal" class="modal-title secondary-title">FICHE VEHICULE</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-fiche d-flex">
+                    <div class="img col-sm-5">
+                        <img id="image-modal" src="" alt="">
+                    </div>
+                    <div class="description col-sm-7">
+                        <ul>
+                            <li class="matricule">
+                                <span id="immatriculation-modal"></span>
+                            </li>
+                            <li class="marque">
+                                <span id="marque-modal"></span>
+                            </li>
+                            <li class="centre">
+                                <span id="centre-modal"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-body-nav">
+                        <nav class="array-nav">
+                            <ul class="d-flex justify-content-between">
+                                <li><span @click="chooseVoyage" :class="{active : isVoyage}">VOYAGE EFFECTUES</span></li>
+                                <li><span @click="chooseCarburant" :class="{active : isCarburant}">CARBURANT</span></li>
+                                <li><span @click="choosePneus" :class="{active : isPneus}">PNEUS</span></li>
+                                <li><span @click="chooseEntretien" :class="{active : isEntretien}">ENTRETIEN</span></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="modal-body-arrays array">
+                        <div class="trans_tableau in-modal">
+                            <table v-show="isVoyage" class="table table-in-modal" id="modal-array-voyage">
+                                <thead>
+                                <tr>
+                                    <th class="chauffeur">CHAUFFEUR</th>
+                                    <th class="client">CLIENT</th>
+                                    <th class="ot">OT</th>
+                                    <th class="date">DATE DEBUT</th>
+                                    <th class="date">DATE FIN</th>
+                                    <th class="trajet">TRAJET</th>
+                                    <th class="trajet">MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-voyage">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="6">TOTAL</td>
+                                    <td id="total_montant_voyage" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isCarburant" class="table table-in-modal" id="modal-array-carburant">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE/HEURE</th>
+                                    <th class="station">STATION</th>
+                                    <th class="kilometrage">KILOMETRAGE</th>
+                                    <th class="chauffeur">CHAUFFEUR</th>
+                                    <th class="client">CLIENT</th>
+                                    <th class="type">TYPE</th>
+                                    <th class="litrage">LITRAGE</th>
+                                    <th class="fond">FOND</th>
+                                    <th class="fond">CONSO</th>
+                                    <th class="station">TRAJET</th>
+                                    <th class="montant">MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-carburant">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="10">TOTAL</td>
+                                    <td id="total_montant_carburant" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isPneus" class="table table-in-modal" id="modal-array-pneus">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE/HEURE</th>
+                                    <th class="kilometrage">KILOMETRAGE</th>
+                                    <th class="num_serie">N° SERIE</th>
+                                    <th class="marque">MARQUE</th>
+                                    <th class="ref">REFERENCE</th>
+                                    <th class="position">POSITION</th>
+                                    <th>MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-pneu">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="6">TOTAL</td>
+                                    <td id="total_montant_pneu" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isEntretien" class="table table-in-modal" id="modal-array-entretien">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE DEBUT</th>
+                                    <th class="date">DATE FIN</th>
+                                    <th class="km">KM</th>
+                                    <th class="ot">OT</th>
+                                    <th class="motif">MOTIF</th>
+                                    <th class="pieces">PIECES</th>
+                                    <th class="intyervenant">INTERVENANT</th>
+                                    <th class="commentaire">COMMENTAIRE</th>
+                                    <th class="montant">COUT TOTAL</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-entretien">
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="8">TOTAL</td>
+                                    <td id="total_montant_intervenation" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-fiche-chauffeur" tabindex="-1" role="dialog" aria-labelledby="exemple-fiche-chauffeur" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="title-modal" class="modal-title secondary-title">FICHE CHAUFFEUR</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-fiche d-flex">
+                    <div class="img col-sm-5">
+                        <img id="image-modal-chauffeur" src="/images/icones_trans/avatar.png" alt="">
+                    </div>
+                    <div class="description col-sm-7">
+                        <ul>
+                            <li class="row matricule">
+                                <div class="col-md-6">NOM</div> <div class="col-md-6"><span id="nom-modal"></span></div>
+                            </li>
+                            <li class="row marque">
+                                <div class="col-md-6">APPELLATION</div> <div class="col-md-6"><span id="appelation-modal"></span></div>
+                            </li>
+                            <li class="row centre">
+                                <div class="col-md-6">MATRICULE</div> <div class="col-md-6"><span id="matricule-modal"></span></div>
+                            </li>
+                            <li class="row centre">
+                                <div class="col-md-6">AGE</div> <div class="col-md-6"><span id="age-modal"></span></div>
+                            </li>
+                            <li class="row matricule">
+                                <div class="col-md-6">DATE D'EMBAUCHE</div> <div class="col-md-6"><span id="embauche-modal"></span></div>
+                            </li>
+                            <li class="row marque">
+                                <div class="col-md-6">ANNCIENNETE</div> <div class="col-md-6"><span id="anciennete-modal"></span></div>
+                            </li>
+                            <li class="row marque">
+                                <div class="col-md-6">CIN</div> <div class="col-md-6"><span id="cin-modal"></span></div>
+                            </li>
+                            <li class="row centre">
+                                <div class="col-md-6">PERMIS</div> <div class="col-md-6"><span id="permis-modal"></span></div>
+                            </li>
+                            <li class="row centre">
+                                <div class="col-md-6">PROCHAIN VISITE</div> <div class="col-md-6" id="visite-modal"></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-body-nav">
+                        <nav class="array-nav">
+                            <ul class="d-flex justify-content-between">
+                                <li><span @click="chooseVoyage" :class="{active : isVoyage}">VOYAGE EFFECTUES</span></li>
+                                <li><span @click="chooseCarburant" :class="{active : isCarburant}">CARBURANT</span></li>
+                                <li><span @click="choosePneus" :class="{active : isPneus}">PNEUS</span></li>
+                                <li><span @click="chooseEntretien" :class="{active : isEntretien}">ENTRETIEN</span></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="modal-body-arrays array">
+                        <div class="trans_tableau in-modal">
+                            <table v-show="isVoyage" class="table table-in-modal" id="modal-array-voyage">
+                                <thead>
+                                <tr>
+                                    <th class="chauffeur">VEHICULE</th>
+                                    <th class="client">CLIENT</th>
+                                    <th class="ot">OT</th>
+                                    <th class="date">DATE DEBUT</th>
+                                    <th class="date">DATE FIN</th>
+                                    <th class="trajet">TRAJET</th>
+                                    <th class="trajet">MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-voyage-chauffeur">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="6">TOTAL</td>
+                                    <td id="total_montant_voyage_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isCarburant" class="table table-in-modal" id="modal-array-carburant">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE/HEURE</th>
+                                    <th class="station">STATION</th>
+                                    <th class="kilometrage">KILOMETRAGE</th>
+                                    <th class="chauffeur">VEHICULE</th>
+                                    <th class="client">CLIENT</th>
+                                    <th class="type">TYPE</th>
+                                    <th class="litrage">LITRAGE</th>
+                                    <th class="fond">FOND</th>
+                                    <th class="station">TRAJET</th>
+                                    <th class="montant">MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-carburant-chauffeur">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="9">TOTAL</td>
+                                    <td id="total_montant_carburant_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isPneus" class="table table-in-modal" id="modal-array-pneus">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE/HEURE</th>
+                                    <th class="chauffeur">VEHICULE</th>
+                                    <th class="kilometrage">KILOMETRAGE</th>
+                                    <th class="num_serie">N° SERIE</th>
+                                    <th class="marque">MARQUE</th>
+                                    <th class="ref">REFERENCE</th>
+                                    <th class="position">POSITION</th>
+                                    <th>MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-pneu-chauffeur">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="7">TOTAL</td>
+                                    <td id="total_montant_pneu_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isEntretien" class="table table-in-modal" id="modal-array-entretien">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE DEBUT</th>
+                                    <th class="date">DATE FIN</th>
+                                    <th class="chauffeur">VEHICULE</th>
+                                    <th class="km">KM</th>
+                                    <th class="ot">OT</th>
+                                    <th class="motif">MOTIF</th>
+                                    <th class="pieces">PIECES</th>
+                                    <th class="intyervenant">INTERVENANT</th>
+                                    <th class="commentaire">COMMENTAIRE</th>
+                                    <th class="montant">COUT TOTAL</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-entretien-chauffeur">
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="9">TOTAL</td>
+                                    <td id="total_montant_intervenation_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js'></script>
+    <script src='https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js'></script>
+    <script src='https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js'></script>
+    <script src='https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js'></script>
+    <script>
+        // jquery
+        $(document).ready(function(){
+
+            $.fn.dataTable.moment( 'DD/MM/YYYY HH:mm' );
+            // afficher facture
+            $(document).on('click', '.print', function(ev){
+                ev.preventDefault()
+                let image = $(this).attr('data-image');
+                //onclick="printJS('{{ asset('uploads/facture_trans/facture.png') }}' , 'image')"
+                printJS( $(this).data('url') , 'image')
+            })
+            $(document).on('click','.link_facture', function(ev){
+                ev.preventDefault();
+                $('#modal-facture .facture-content img').attr('src','/'+$(this).data('url'));
+                $('#modal-facture a.download').attr('href','/'+$(this).data('url'));
+                $('#modal-facture a.print').attr('data-url','/'+$(this).data('url'));
+                $('#modal-facture').modal('show')
+            })
+
+            $(document).on('click', '#maj', function()
+            {
+                var modal = $("#modal-voyage");
+               $('.selectpicker').selectpicker();
+                modal.modal('show');
+            });
+            var table = $('#tableau-voyage').DataTable({
+                buttons: [
+                    {extend: 'excel', footer: true }
+                ],
+                "language": {
+                    "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                    "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                    "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                    "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                    "sInfoPostFix": "",
+                    "sInfoThousands": ",",
+                    "sLengthMenu": "Afficher _MENU_ éléments",
+                    "sLoadingRecords": "Chargement...",
+                    "sProcessing": "Traitement...",
+                    "sSearch": "Rechercher :",
+                    "sZeroRecords": "Aucun élément correspondant trouvé",
+                    "oPaginate": {
+                        "sFirst": "Premier",
+                        "sLast": "Dernier",
+                        "sNext": "Suivant",
+                        "sPrevious": "Précédent"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                        "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                    },
+                    "select": {
+                        "rows": {
+                            "_": "%d lignes sélectionnées",
+                            "0": "Aucune ligne sélectionnée",
+                            "1": "1 ligne sélectionnée"
+                        }
+                    }
+                },
+                "ajax" : {
+                    url : "/profile/voyage/list",
+                    type : 'POST',
+                    data: function(d){
+                        d.date1 = $('#date1').val();
+                        d.date2 = $('#date2').val();
+                    },
+                    "dataSrc":"",
+
+                },
+                columns: [
+                    //{ data: 'date' },
+                    { data: 'immatriculation' },
+                    { data: 'prenom' },
+                    { data: 'client' },
+                    { data: 'ot' },
+                    { data: 'date_debut' },
+                    { data: 'date_fin' },
+                    { data: 'trajet' },
+                    { 
+                        data: 'montant',
+                        render: $.fn.dataTable.render.number( ' ', ',', 0, '' )
+                    }
+                ],
+                "columnDefs": [
+                    {
+                        "targets": -1,
+                        "data": null,
+                        "defaultContent": "<a href=\"#\">\n" +
+                            "                                <span class=\"fa fa-pencil edit\"></span>\n" +
+                            "                            </a>\n" +
+                            "                            <a href=\"#\">\n" +
+                            "                                <span class=\"fa fa-trash-o delete\"></span>\n" +
+                            "                            </a>"
+                    },
+                    /*{
+                        "targets": -2,
+                        "createdCell": function (td, cellData, rowData, row, col) {
+                            $(td).html("<a href='#' data-url='"+cellData+"' class='link_facture'><span>Pièce jointe</span><span class='fa fa-info'></span></a></td>");
+                        }
+                    },*/
+                    //{ className: "date", "targets": [0] },
+                    { className: "vehicule", "targets": [0],"createdCell": function (td, cellData, rowData, row, col) {
+                        $(td).html(`<span onclick="loadVehicule(` +rowData.vehicule_id +`)">`+ cellData +`</span>`);
+                        }
+                    },
+                    { className: "chauffeur loadChauffeur", "targets": [1],"createdCell": function (td, cellData, rowData, row, col) {
+                        $(td).html(`<span onclick="loadChauffeur(` +rowData.chauffeur_id +`)">`+ cellData +`</span>`);
+                        }
+                    },
+                    //{ className: "chauffeur", "targets": [1] },
+                    { className: "client", "targets": [2] },
+                    { className: "ot", "targets": [3] },
+                    { className: "date-heure", "targets": [4] },
+                    { className: "date-heure", "targets": [5] },
+                    { className: "trajet", "targets": [6] },
+                    { className: "montant-ttc", "targets": [7] },
+                    { className: `action 
+                            {% if app.user.getTransportVoyage() == '1' %}
+                                enable-link
+                            {% else %}
+                                 disable-link
+                            {% endif %}`, "targets": [8] },
+                ],
+                "createdRow": function( row, data, dataIndex ) {
+                    $(row).attr('data-id',data['id']);
+                    $(row).attr('data-chauffeur',data['chauffer_id']);
+                    $(row).attr('data-vehicule',data['vehicule_id']);
+                },
+                "footerCallback": function ( row, data, start, end, display ) {
+                    var format = new Intl.NumberFormat();
+                    var api = this.api();
+
+                    // Remove the formatting to get integer data for summation
+                    var intVal = function ( i ) {
+                        return typeof i === 'string' ?
+                            parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+
+                    // Total over all pages
+                    /*total = api
+                        .column( 8 )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);*/
+
+                    // Total over this page
+                    pageTotal = api
+                        .column( 7, { page: 'current'} )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+
+                    // Update footer
+                    $( api.column( 7 ).footer() ).html(
+                        '<span class="montant">'+format.format(pageTotal)+'</span> <span class="unite_ar">Ar</span>'
+                    );
+                },
+                //annule le tri
+                order : [[4 , 'desc']],
+                ordering : true, 
+                searching:true,
+                responsive: true,
+                scrollY: false,
+                scrollX: true,
+                scrollCollapse: true,
+                paging: true,
+                autoFill: true
+            });
+            new $.fn.dataTable.FixedHeader(table);
+            $('#mySearchText').on( 'keyup', function () {
+                table.search($(this).val()).draw();
+            });
+            var forms = document.getElementsByClassName('form-new-voyage');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault(false);
+                    if (form.checkValidity() === false) {;
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }else{
+                        var myform = $('form.form-new-voyage')[0]; // You need to use standard javascript object here
+                        var formData = new FormData(myform);
+                        $.ajax({
+                            type: "POST",
+                            url: "/profile/voyage/new",
+                            data: formData,
+                            contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                            processData: false, // NEEDED, DON'T OMIT THIS
+                            beforeSend: function(){
+                                $('#new-voyage').html('PATIENTER...');
+                                $('#new-voyage').prop('disabled',true);
+                            },
+                            success: function(response) {
+                                if("success" == response.value){
+                                    $('#new-voyage').html('VALIDER');
+                                    $('#new-voyage').prop('disabled',false);
+                                    $('form.form-new-voyage').trigger("reset");
+                                    $('.selectpicker').selectpicker('refresh');
+                                    table.ajax.reload(function(response){
+                                        $('#modal-voyage').modal('toggle');
+                                    }, false);
+                                }
+                            },
+                        });
+                    }
+                });
+            })
+            var forms2 = document.getElementsByClassName('form-edit-voyage');
+            // Loop over them and prevent submission
+            var validation2 = Array.prototype.filter.call(forms2, function(form) {
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault(false);
+                    if (form.checkValidity() === false) {;
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }else{
+                        var myform = $('form.form-edit-voyage')[0]; // You need to use standard javascript object here
+                        var formData = new FormData(myform);
+                        $.ajax({
+                            type: "POST",
+                            url: "/profile/voyage/edit",
+                            data: formData,
+                            contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                            processData: false, // NEEDED, DON'T OMIT THIS
+                            beforeSend: function(){
+                                $('#edit-voyage').html('PATIENTER...');
+                                $('#edit-voyage').prop('disabled',true);
+                            },
+                            success: function(response) {
+                                if("success" == response.value){
+                                    $('#edit-voyage').html('MODIFIER');
+                                    $('#edit-voyage').prop('disabled',false);
+                                    $('form.form-edit-voyage').trigger("reset");
+                                    $('.selectpicker').selectpicker('refresh');
+                                    table.ajax.reload(function(response){
+                                        $('#modal-voyage-edit').modal('toggle');
+                                    }, false);
+                                }
+                            },
+                        });
+                    }
+                });
+            })
+            $('#tableau-voyage tbody').on( 'click', 'span.edit', function () {
+                $('form.form-edit-voyage').trigger("reset");
+                var data = table.row( $(this).parents('tr') ).data();
+                var datesplit_debut = data.date_debut.split(' ');
+                var dates_debut = datesplit_debut[0].split('/');
+                var date_debut = dates_debut[2]+'-'+dates_debut[1]+'-'+dates_debut[0]+'T'+datesplit_debut[1];
+                var datesplit_fin = data.date_fin.split(' ');
+                var dates_fin = datesplit_fin[0].split('/');
+                var date_fin = dates_fin[2]+'-'+dates_fin[1]+'-'+dates_fin[0]+'T'+datesplit_fin[1];
+                $('input[name=date_debut_edit]').val(date_debut);
+                $('input[name=date_fin_edit]').val(date_fin);
+                $('#select-vehicule-edit').val(data.vehicule_id);
+                $('#select-client-edit').val(data.client);
+                $('#select-trajet-edit').val(data.trajet);
+                $('#select-chauffeur-edit').val(data.chauffeur_id);
+                $('input[name=ot_edit]').val(data.ot);
+                $('input[name=montant_edit]').val(toCurrency(data.montant));
+                $('input[name=id_edit]').val(data.id);
+                $('.selectpicker').selectpicker('refresh');
+                $('#modal-voyage-edit').modal('toggle');
+                
+            } );
+            
+            $('#tableau-voyage tbody').on( 'click', 'span.delete', function (e) {
+                var id = $(this).parents('tr').data('id');
+                if (confirm("Voulez vous vraiment supprimer cette voyage?")) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/profile/voyage/remove",
+                        data: {id: id},
+                        success: function(data) {
+                            if("success" == data.value){
+                                table.ajax.reload(function(response){
+
+                                }, false);
+                            }
+                        },
+                    });
+                }
+            } );
+            $('.btn-filter').click(function () {
+                table.ajax.reload(function(response){
+
+                }, false);
+            })
+            $('#export').on('click',function () {
+                table.buttons('.buttons-excel').trigger();
+            })
+        })
+        function toCurrency(val){
+            return val.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
+        $(document).on('change','#select-trajet',function(e){
+            $('input[name=montant]').val($('option:selected', this).attr('data-prix').replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " "));
+
+        });
+        $(document).on('change','#select-trajet-edit',function(e){
+            $('input[name=montant_edit]').val($('option:selected', this).attr('data-prix').replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " "));
+
+        });
+        function loadVehicule(id) {
+            app.loadVehicule(id);
+        }
+        function loadChauffeur(id) {
+            app.loadChauffeur(id);
+        }
+        Vue.config.ignoredElements = [/^ion-/]
+
+        // script vue pour le currency format
+        var app = new Vue({
+            el:"#app",
+            delimiters:['${', '}'],
+            data(){
+                return {
+                    montantVoyageCreate : '',
+                    montantVoyageEdit : '',
+                    isVoyage : true,
+                    isCarburant : false,
+                    isPneus : false,
+                    isEntretien : false,
+                }
+            },
+            computed : {
+                currencyMontantCreate : {
+                    get(){
+                        return this.montantVoyageCreate.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+                    },
+                    set(val){
+                        this.montantVoyageCreate = val;
+                    }
+                },
+                currencyMontantEdit : {
+                    get(){
+                        return this.montantVoyageEdit.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+                    },
+                    set(val){
+                        this.montantVoyageEdit = val;
+                    }
+                }
+            },
+            methods:{
+                allSetToFalse(){
+                    this.isVoyage = false;
+                    this.isCarburant = false;
+                    this.isPneus = false;
+                    this.isEntretien = false
+                },
+                chooseVoyage(){
+                    this.allSetToFalse();
+                    this.isVoyage = true;
+                },
+                chooseCarburant(){
+                    this.allSetToFalse();
+                    this.isCarburant = true;
+                },
+                choosePneus(){
+                    this.allSetToFalse();
+                    this.isPneus = true;
+                }, chooseEntretien(){
+                    this.allSetToFalse();
+                    this.isEntretien = true;
+                },
+                loadVehicule(id){
+                    let self = this; //<---added
+                    var data = {
+                        'vehicule_id' : id
+                    }
+                    $.ajax({
+                        url : "/profile/load_vehicule_id",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+
+                            var imagePath = "{{ asset('uploads/vehicules/')}}";
+                            $('#immatriculation-modal').text(data[0].immatriculation)
+                            $('#marque-modal').text(data[0].vehicule_marque)
+                            $('#centre-modal').text(data[0].vehicule_centre)
+                            data[0].vehicule_image ? $("#image-modal").attr('src', imagePath + data[0].vehicule_image) : $("#image-modal").attr('src','');
+                        },
+                        complete : function(data){
+                            $('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                    $.ajax({
+                        url : "/profile/load_vehicule",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+
+                            //voyage
+                            var htmlVoyage = '';
+                            var totalVoyage = 0;
+                            data.ficheVoyage.forEach((item, index) => {
+                                totalVoyage += parseInt(item.voyage_montant);
+                                htmlVoyage += `
+                                    <tr>
+                                        <td class="chauffeur">${ item.chauffeur_voyage ? item.chauffeur_voyage : '' }</td>
+                                        <td class="client">${ item.client_voyage ? item.client_voyage : '' }</td>
+                                        <td class="ot">${ item.voyage_ot ? item.voyage_ot : '' }</td>
+                                        <td class="date">${ item.voyage_dd ? self.splitDate(item.voyage_dd.date)  : '' }</td>
+                                        <td class="date">${ item.voyage_df ? self.splitDate(item.voyage_df.date) : '' }</td>
+                                        <td class="trajet">${ item.voyage_trajet ? item.voyage_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.voyage_montant ? self.formatCurency(item.voyage_montant) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_voyage").text(self.formatCurency(totalVoyage))
+                            $("#body-voyage").html(htmlVoyage);
+
+                            //carburant
+                            var htmlCarburant = '';
+                            var totalCarburant = 0;
+                            data.ficheCarburant.forEach((item, index) => {
+                                totalCarburant += parseInt(item.carb_montant);
+                                htmlCarburant += `
+                                    <tr>
+                                        <td class="date">${ item.date_carb ? self.splitDate(item.date_carb.date) : '' }</td>
+                                        <td class="station">${ item.carb_station ? item.carb_station  : '' }</td>
+                                        <td class="kilometrage">${ item.carb_kilometrage ? self.formatKilometrage(item.carb_kilometrage) : '' }</td>
+                                        <td class="chauffeur">${ item.carb_sortie_chauffeur ? item.carb_sortie_chauffeur : '' }</td>
+                                        <td class="client">${ item.carb_client ? item.carb_client : '' }</td>
+                                        <td class="type">${ item.carb_type ? item.carb_type : '' }</td>
+                                        <td class="litrage">${ item.carb_litrage ? self.formatLitrage(item.carb_litrage) : '' }</td>
+                                        <td class="fond">${ item.carb_fond ? self.formatLitrage(item.carb_fond) : '' }</td>
+                                        <td class="conso">${ item.conso ? item.conso : '' }</td>
+                                        <td class="trajet">${ item.carb_trajet ? item.carb_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.carb_montant ? self.formatCurency(item.carb_montant) : ''}</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_carburant").text(self.formatCurency(totalCarburant))
+                            $("#body-carburant").html(htmlCarburant);
+
+                            //pneu
+                            var htmlPneu = '';
+                            var totalPneu = 0;
+                            if(data.fichePneu.length > 0){
+                                data.fichePneu.forEach((item, index) => {
+                                    totalPneu += item.pneu_montant != null ? parseInt(item.pneu_montant.replaceAll(' ', '')) : 0;
+                                    htmlPneu += `
+                                        <tr>
+                                            <td class="date">${ item.date_pneu ? self.splitDate(item.date_pneu.date) : '' }</td>
+                                            <td class="kilometrage">${ item.pneu_kilometrage ? self.formatKilometrage(item.pneu_kilometrage) : '' }</td>
+                                            <td class="num_serie">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="marque">${ item.pneu_marque ? item.pneu_marque : '' }</td>
+                                            <td class="ref">${ item.pneu_position ? item.pneu_position : '' }</td>
+                                            <td class="position">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="montant-sold">${ item.pneu_montant ? self.formatCurency(item.pneu_montant.replaceAll(' ', '')) : '' }</td>
+                                        </tr>
+                                    `;
+                                })
+                            }
+                            $("#total_montant_pneu").text(self.formatCurency(totalPneu))
+                            $("#body-pneu").html(htmlPneu);
+
+
+                            var htmlInt = '';
+                            var totalInt = 0;
+                            data.fichePiece.forEach((item, index) => {
+                                totalInt += parseInt(item.int_total);
+                                htmlInt += `
+                                    <tr>
+                                        <td class="date">${ item.int_date_fin ? self.splitDate(item.int_date_fin.date) : '' }</td>
+                                        <td class="date">${ item.int_date_debut ? self.splitDate(item.int_date_debut.date) : '' }</td>
+                                        <td class="km">${ item.int_km ? item.int_km : '' }</td>
+                                        <td class="ot">${ item.int_ot ? item.int_ot : '' }</td>
+                                        <td class="motif">${ item.int_motif ? item.int_motif : '' }</td>
+                                        <td class="pieces">
+                                            <span data-intervention="`+ item.intervention_id +`" class="npiece" style="${ item.nbr_piece_intervention ? 'display : block;' : 'display:none;' }">
+                                                ${ item.nbr_piece_intervention ? item.nbr_piece_intervention : 0 } pièces<i class="fa fa-detail"></i>
+                                            </span>
+                                        </td>
+                                        <td class="intervenant">${ item.intervenant ? item.intervenant : '' }</td>
+                                        <td class="commentaire">${ item.int_conmmentaire ? item.int_conmmentaire: '' }</td>
+                                        <td class="montant-sold">${ item.int_total ? self.formatCurency(item.int_total) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_intervenation").text(self.formatCurency(totalInt))
+                            $("#body-entretien").html(htmlInt);
+                        },
+                        complete : function(data){
+                            //$('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                },
+                splitDate(date){
+                    var dateS = date.split('.');
+                    return dateS[0];
+                },
+                formatCurency(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " Ar" ;
+                    }else{
+                        return 0;
+                    }
+
+                },
+                formatLitrage(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " L" ;
+                    }else{
+                        return 0;
+                    }
+
+                },
+                formatKilometrage(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " KM" ;
+                    }else{
+                        return 0;
+                    }
+                    
+                },
+                loadChauffeur(id){
+                    let self = this; //<---added
+                    $('#image-modal-chauffeur').attr("src","/images/icones_trans/avatar.png");
+                    $('#visite-modal').html('');
+                    $.ajax({
+                        url: "/profile/transport/detail/chauffeur",
+                        type: "POST",
+                        data: {
+                            'id' : id
+                        },
+                        success: function (data, status) {
+                            $('#nom-modal').text(data.nom);
+                            $('#appelation-modal').text(data.appellation);
+                            $('#matricule-modal').text(data.matricule);
+                            $('#embauche-modal').text(data.embauche);
+                            $('#permis-modal').text(data.permis);
+                            $('#cin-modal').text(data.cin);
+                            $('#age-modal').text(data.age);
+                            $('#visite-modal').append(data.visite);
+                            $('#anciennete-modal').text(data.anciennete);
+                            if(data.image) $('#image-modal-chauffeur').attr("src","/uploads/chauffeurs/"+data.image);
+                            $('#modal-fiche-chauffeur').modal('show');
+                        },
+                    });
+                    var data = {
+                        'chauffeur_id' : id
+                    }
+
+                    $.ajax({
+                        url : "/profile/load_chauffeur",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+
+                            //voyage
+                            var htmlVoyage = '';
+                            var totalVoyage = 0;
+                            data.ficheVoyage.forEach((item, index) => {
+                                totalVoyage += parseInt(item.voyage_montant);
+                                htmlVoyage += `
+                                    <tr>
+                                        <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                        <td class="client">${ item.client_voyage ? item.client_voyage : '' }</td>
+                                        <td class="ot">${ item.voyage_ot ? item.voyage_ot : '' }</td>
+                                        <td class="date">${ item.voyage_dd ? self.splitDate(item.voyage_dd.date)  : '' }</td>
+                                        <td class="date">${ item.voyage_df ? self.splitDate(item.voyage_df.date) : '' }</td>
+                                        <td class="trajet">${ item.voyage_trajet ? item.voyage_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.voyage_montant ? self.formatCurency(item.voyage_montant) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_voyage_chauffeur").text(self.formatCurency(totalVoyage))
+                            $("#body-voyage-chauffeur").html(htmlVoyage);
+
+                            //carburant
+                            var htmlCarburant = '';
+                            var totalCarburant = 0;
+                            data.ficheCarburant.forEach((item, index) => {
+                                totalCarburant += parseInt(item.carb_montant);
+                                htmlCarburant += `
+                                    <tr>
+                                        <td class="date">${ item.date_carb ? self.splitDate(item.date_carb.date) : '' }</td>
+                                        <td class="station">${ item.carb_station ? item.carb_station  : '' }</td>
+                                        <td class="kilometrage">${ item.carb_kilometrage ? self.formatKilometrage(item.carb_kilometrage) : '' }</td>
+                                        <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                        <td class="client">${ item.carb_client ? item.carb_client : '' }</td>
+                                        <td class="type">${ item.carb_type ? item.carb_type : '' }</td>
+                                        <td class="litrage">${ item.carb_litrage ? self.formatLitrage(item.carb_litrage) : '' }</td>
+                                        <td class="fond">${ item.carb_fond ? self.formatLitrage(item.carb_fond) : '' }</td>
+                                        <td class="trajet">${ item.carb_trajet ? item.carb_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.carb_montant ? self.formatCurency(item.carb_montant) : ''}</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_carburant_chauffeur").text(self.formatCurency(totalCarburant));
+                            $("#body-carburant-chauffeur").html(htmlCarburant);
+
+                            //pneu
+                            var htmlPneu = '';
+                            var totalPneu = 0;
+                            if(data.fichePneu.length > 0){
+                                data.fichePneu.forEach((item, index) => {
+                                    totalPneu += item.pneu_montant != null ? parseInt(item.pneu_montant.replaceAll(' ', '')) : 0;
+                                    htmlPneu += `
+                                        <tr>
+                                            <td class="date">${ item.date_pneu ? self.splitDate(item.date_pneu.date) : '' }</td>
+                                            <td class="kilometrage">${ item.pneu_kilometrage ? self.formatKilometrage(item.pneu_kilometrage) : '' }</td>
+                                            <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                            <td class="num_serie">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="marque">${ item.pneu_marque ? item.pneu_marque : '' }</td>
+                                            <td class="ref">${ item.pneu_position ? item.pneu_position : '' }</td>
+                                            <td class="position">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="montant-sold">${ item.pneu_montant ? self.formatCurency(item.pneu_montant.replaceAll(' ', '')) : '' }</td>
+                                        </tr>
+                                    `;
+                                })
+                            }
+                            $("#total_montant_pneu_chauffeur").text(self.formatCurency(totalPneu))
+                            $("#body-pneu-chauffeur").html(htmlPneu);
+
+
+                            var htmlInt = '';
+                            var totalInt = 0;
+                            data.fichePiece.forEach((item, index) => {
+                                totalInt += parseInt(item.int_total);
+                                htmlInt += `
+                                    <tr>
+                                        <td class="date">${ item.int_date_fin ? self.splitDate(item.int_date_fin.date) : '' }</td>
+                                        <td class="date">${ item.int_date_debut ? self.splitDate(item.int_date_debut.date) : '' }</td>
+                                        <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                        <td class="km">${ item.int_km ? item.int_km : '' }</td>
+                                        <td class="ot">${ item.int_ot ? item.int_ot : '' }</td>
+                                        <td class="motif">${ item.int_motif ? item.int_motif : '' }</td>
+                                        <td class="pieces">
+                                            <span data-intervention="`+ item.intervention_id +`" class="npiece" style="${ item.nbr_piece_intervention ? 'display : block;' : 'display:none;' }">
+                                                ${ item.nbr_piece_intervention ? item.nbr_piece_intervention : 0 } pièces<i class="fa fa-detail"></i>
+                                            </span>
+                                        </td>
+                                        <td class="intervenant">${ item.intervenant ? item.intervenant : '' }</td>
+                                        <td class="commentaire">${ item.int_conmmentaire ? item.int_conmmentaire: '' }</td>
+                                        <td class="montant-sold">${ item.int_total ? self.formatCurency(item.int_total) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_intervenation_chauffeur").text(self.formatCurency(totalInt))
+                            $("#body-entretien-chauffeur").html(htmlInt);
+                        },
+                        complete : function(data){
+                            //$('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                },
+            }
+        })
+    </script>
+{% endblock %}

@@ -1,0 +1,161 @@
+<script>
+    Chart.defaults.RoundedDoughnut    = Chart.helpers.clone(Chart.defaults.doughnut);
+                Chart.controllers.RoundedDoughnut = Chart.controllers.doughnut.extend({
+                    draw: function(ease) {
+                        var ctx           = this.chart.ctx;
+                        var easingDecimal = ease || 1;
+                        var arcs          = this.getMeta().data;
+                        Chart.helpers.each(arcs, function(arc, i) {
+                            arc.transition(easingDecimal).draw();
+
+                            var pArc   = arcs[i === 0 ? arcs.length - 1 : i - 1];
+                            var pColor = pArc._view.backgroundColor;
+
+                            var vm         = arc._view;
+                            
+                            var radius     = (vm.outerRadius + vm.innerRadius) / 2;
+                            var thickness  = (vm.outerRadius - vm.innerRadius) / 2;
+
+                            var startAngle = Math.PI - vm.startAngle - Math.PI / 2;
+                            var angle      = Math.PI - vm.endAngle - Math.PI / 2;
+
+                            ctx.save();
+                            ctx.translate(vm.x, vm.y);
+
+                            ctx.fillStyle = i === 0 ? vm.backgroundColor : pColor;
+                            ctx.beginPath();
+                            ctx.arc(radius * Math.sin(startAngle), radius * Math.cos(startAngle), thickness, 0, 2 * Math.PI);
+                            ctx.fill();
+
+                            ctx.fillStyle = vm.backgroundColor;
+                            ctx.beginPath();
+                            ctx.arc(radius * Math.sin(angle), radius * Math.cos(angle), thickness, 0, 2 * Math.PI);
+                            ctx.fill();
+
+                            ctx.restore();
+                        });
+                    }
+                });
+
+           var icone = [
+               "{{ asset('images/fidelisation/client_ota.png') }}",
+               "{{ asset('images/fidelisation/client_corpo.png') }}",
+               "{{ asset('images/fidelisation/client_toa.png') }}",
+               "{{ asset('images/fidelisation/client_direct.png') }}"
+           ]
+
+            // var chartData = [
+            //     {"nom": "OTA", "eff": 0}, 
+            //     {"nom": "CORPORATE", "eff": 2}, 
+            //     {"nom": "TOA", "eff": 3}, 
+            //     {"nom": "DIRECT", "eff": 0}
+            // ]
+            
+            // consolo.log(chartData);
+            var chartData = $('<div>').html('{{ effectif_provenance }}')[0].textContent;
+            var chartData = JSON.parse(chartData);
+            //console.log(chartData);
+
+            var data_aff = [];
+
+            for(var i = 0; i< chartData.length; i++){
+                data_aff.push(chartData[i].eff);
+            }
+
+            var label = [];
+
+            for(var i = 0; i< chartData.length; i++){
+                label.push(chartData[i].nom);
+            }
+
+            var myChart = new Chart(document.getElementById('mychart'), {
+                type: 'RoundedDoughnut',// doughnut
+                animation:{
+                    animateScale:true
+                },
+                data: {
+                    labels: label,
+                    datasets: [{
+                        label: 'Client',
+                        data: data_aff,
+                        backgroundColor: [
+                            "#1098F7",
+                            "#47C582",
+                            "#D49E00",
+                            "#7B61FF"
+                        ],
+                        borderColor: "#2b2b2b",
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    elements: {
+                        center: {
+                            //text: textInside
+                        }
+                    },
+                    hover : {
+                        onHover: function(event,elements) {
+                            $("#mychart").css("cursor", elements[0] ? "pointer" : "default");
+                            $("p.text_center_chart").css("background", "transparent !important");
+                        }
+                    },
+                    responsive: true,
+                    legend: {
+                        display : false,
+                        onClick : function(e, legendItem){
+                            console.log(legendItem)
+                        }
+                    },
+                    legendCallback: function(chart) {
+                        var legendHtml = [];
+                        legendHtml.push('<ul class="ul_legend">');
+                        var item = chart.data.datasets[0];
+                        var tab_link = ["{{ path('client_OTA', {'pseudo_hotel' : hotel}) }}", 
+                                        "{{ path('client_TOA', {'pseudo_hotel' : hotel}) }}",
+                                        "{{ path('client_CORPO', {'pseudo_hotel' : hotel}) }}",
+                                        "{{ path('client_DIRECT', {'pseudo_hotel' : hotel}) }}",
+                        ]
+                        // on calcule le total client
+                        var total_client = 0;
+                        for (var i=0; i < item.data.length; i++) {
+                            total_client += item.data[i];
+                        }
+                        
+                        for (var i=0; i < item.data.length; i++) {
+                            legendHtml.push('<li>');
+                            legendHtml.push(`
+                                <a href="` + tab_link[i] +`" class="link_chart_donut" data-num="`+ i +`">
+                                    <div class="div_icone">
+                                        <img width="45px" height="45px" src="`+ icone[i] +`" alt="OTA" />
+                                    </div>
+                                    <div class="div_label">
+                                        <span>Client ` + chart.data.labels[i] + `</span></br>
+                                        <span>`+ ((item.data[i] * 100) / total_client).toFixed(2) +`%</span>
+                                    </div>
+                                    <div class="div_stat">
+                                        <span class="effectif">` + item.data[i] + `</span>
+                                    </div>
+                                </a>
+                            `);
+                            legendHtml.push('</li>');
+                        }
+
+                        legendHtml.push('</ul>');
+                        return legendHtml.join("");
+                    },
+                    tooltips: {
+                        enabled: true,
+                        mode: 'label',
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                var indice = tooltipItem.index;
+                                return data.datasets[0].data[indice] + " clients " + data.labels[indice] + '';
+                            }
+                        }
+                    },
+                }
+            });
+
+            $('#my-legend-con').html(myChart.generateLegend());
+</script>

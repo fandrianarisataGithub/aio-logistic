@@ -1,0 +1,462 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Entrées Pièces{% endblock %}
+
+{% block body %}
+<div id="app">
+    <div class="list-action-garage">
+        <ul>
+            <li>
+                <a
+                    {% if (currentPath=="/profile/garage/stock")  %}
+                        class="a-hovered"
+                    {% endif %}
+                    href="{{ path('transport_garage_stock_piece') }}"
+                >Etat</a>
+            </li>
+            <li>
+                <a
+                    {% if (currentPath=="/profile/garage/entree") %}
+                        class="a-hovered"
+                    {% endif %}
+                    href="{{ path('transport_garage_entree_piece') }}"
+                >Entrées</a>
+            </li>
+            <li>
+               <a
+                    {% if (currentPath=="/profile/garage/sortie") %}
+                        class="a-hovered"
+                    {% endif %} 
+                    href="{{ path('transport_garage_sortie_piece') }}"
+                >Sorties</a>
+            </li>
+        </ul>
+    </div>
+    <div class="title-page-trans">
+        <h1 class="fs-primary">Entrées Pièces</h1>
+    </div>
+    <div class="array">
+        <div class="array-head">
+            <div class="part d-flex">
+                <div class="input-content input-search-trans-array">
+                    <span class="fa fa-search"></span><input id="mySearchText" type="text" placeholder="Recherche">
+                </div>
+                <div class="input-date-filter">
+                    <span class="icone_calenadr">
+                        <img src="{{ asset('images/icones_trans/calendar.svg') }}" alt="calendar">
+                    </span>
+                    <input type="date" id="date1">
+                    <span>-</span>
+                    <input type="date" id="date2">
+                </div>
+            </div>
+            <div class="part d-flex">
+                <div class="maj-export">
+                    <a href="#" id="maj"
+                        {% if app.user.transportGarage == '1' %}
+                            class="fond-lightOrange btn-maj"
+                        {% else %}
+                            class="fond-lightOrange btn-maj d-none"
+                        {% endif %}
+                    >
+                        <ion-icon name="add-outline"></ion-icon>
+                        <span>Inserer</span>
+                    </a>
+                    <a href="#" id="export" class="fond-lightGreen btn-maj">
+                        <span><img src="{{ asset('images/icones_trans/export.svg') }}" alt="export"></span>
+                        <span>Export Excel</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="trans_tableau">
+            <table id="tableau-entree-piece" class="table" style="width:100%" >
+                <thead>
+                    <tr>
+                        <th class="date">DATE</th>
+                        <th class="fournisseur">FOURNISSEUR</th>
+                        <th class="bl">BL</th>
+                        <th class="code">CODE</th>
+                        <th class="designation">DESIGNATION</th>
+                        <th class="quantite">QUANTITE</th>
+                        <th class="prix_unitaire">PRIX UNITAIRE (HT)</th>
+                        <th class="prix_total">PRIX TOTAL</th>
+                        <th class="action"></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6">
+                        </td>
+                        <td colspan="1">
+                            TOTAL TTC :
+                        </td>
+                        <td colspan="1" style="text-align:start;">
+                            <span class="montant">0</span> <span class="unite_ar">Ar</span>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+     <div class="modal fade" id="modal-entree-piece" tabindex="-1" role="dialog" aria-labelledby="modalentree" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title secondary-title">MISE A JOUR ENTREES PIECES</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body modal-body-sortie no-mt">
+                    <form action="" class="d-flex justify-content-between form-modal form-new-piece">
+                        <div class="form-part">
+                            <div class="form-group">
+                                <label class="label-modal" for="">DATE</label>
+                                <input type="date" name="date" class="input-modal" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">FOURNISSEUR</label>
+                                <input placeholder="CPL" name="fournisseur" type="text" class="input-modal" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">BL</label>
+                                <input placeholder="001/2022" name="bl" type="text" class="input-modal" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">CODE</label>
+                                <!--input placeholder="A001" name="code" type="text" class="input-modal" required-->
+                                <select 
+                                    class="selectpicker"
+                                    data-show-subtext="true"
+                                    data-live-search="true"
+                                    name="code" 
+                                    data-size="5"
+                                    required
+                                    name="code" 
+                                    id="select-code"
+                                >
+                                    <option selected="selected" value="">---CHOISISSEZ---</option>
+                                    {% for item in listCodeDes %}
+                                        <option 
+                                            data-id="{{ item.id }}" 
+                                            value="{{ item.code }}"
+                                            data-designation="{{ item.designation }}"
+                                        >
+                                            {{ item.code }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">DESIGNATION</label>
+                                <!--input placeholder="FLO-FILTRE GO" name="designation" type="text" class="input-modal" required-->
+                                <select 
+                                    class="selectpicker"
+                                    data-show-subtext="true"
+                                    data-live-search="true"
+                                    name="designation" 
+                                    id="select-designation"
+                                    data-size="5"
+                                    required
+                                >
+                                    <option selected="selected" value="">---CHOISISSEZ---</option>
+                                    {% for item in listCodeDes %}
+                                        <option data-id="{{ item.id }}" value="{{ item.designation }}">{{ item.designation }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">Qté A AJOUTER</label>
+                                <input placeholder="10" type="number"  name="qte" value="1" min="1" id="qte-input" step="0.01" class="input-modal">
+                            </div>
+                        </div>
+                        <div class="form-part">
+                            <div class="fomr-part-input-liste">
+                                <div class="form-group">
+                                    <label class="label-modal" for="">PRIX UNITAIRE (HT)</label>
+                                    <div class="d-flex suffix">
+                                        <input placeholder="20 000" type="text" class="input-modal" id="input-prix" name="prix" oninput="this.value = this.value.replace(/[^0-9 .]/,'');">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">Ar</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">PRIX TOTAL(HT)</label>
+                                    <div class="d-flex suffix">
+                                        <input placeholder="20 000 000" type="text" id="input-prix-total" name="prix_total" class="input-modal" readonly>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">Ar</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="button-valider">
+                                <button type="submit" id="new-piece" class="btn btn-primary">VALIDER</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js'></script>
+    <script src='https://cdn.datatables.net/plug-ins/1.11.4/sorting/datetime-moment.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js'></script>
+    <script src='https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js'></script>
+    <script src='https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js'></script>
+    <script>
+        // jquery
+        $(document).ready(function(){
+            $('.selectpicker').selectpicker();
+            $('#select-code').change(function(){
+                var val = $(this).find(':selected').attr('data-designation');
+                $('#select-designation').val(val);
+                $('#select-designation').change();
+            })
+            $.fn.dataTable.moment( 'DD/MM/YYYY');
+            $(document).on('click', '#maj', function()
+            {
+                var modal = $("#modal-entree-piece");
+                modal.modal('show');
+            });
+            var table = $('#tableau-entree-piece').DataTable({
+                buttons: [
+                    {extend: 'excel', footer: true }
+                ],
+                "language": {
+                    "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                    "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                    "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                    "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                    "sInfoPostFix": "",
+                    "sInfoThousands": ",",
+                    "sLengthMenu": "Afficher _MENU_ éléments",
+                    "sLoadingRecords": "Chargement...",
+                    "sProcessing": "Traitement...",
+                    "sSearch": "Rechercher :",
+                    "sZeroRecords": "Aucun élément correspondant trouvé",
+                    "oPaginate": {
+                        "sFirst": "Premier",
+                        "sLast": "Dernier",
+                        "sNext": "Suivant",
+                        "sPrevious": "Précédent"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                        "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                    },
+                    "select": {
+                        "rows": {
+                            "_": "%d lignes sélectionnées",
+                            "0": "Aucune ligne sélectionnée",
+                            "1": "1 ligne sélectionnée"
+                        }
+                    }
+                },
+				"ajax" : {
+                    url : "/profile/piece/entrer", // any am Clientcontroller
+                    type : 'POST',
+                    data: function(d){
+                        d.date1 = $('#date1').val();
+                        d.date2 = $('#date2').val();
+                    },
+                    "dataSrc":"",
+						
+				},columns: [
+                    { data: 'date' },
+                    { data: 'fournisseur' },
+                    { data: 'bl' },
+                    { data: 'code' },
+                    { data: 'designation' },
+                    { data: 'qte' },
+                    { data: 'prix', render: $.fn.dataTable.render.number( ' ', ',', 2, '' ) },
+                    { data: 'prix_total', render: $.fn.dataTable.render.number( ' ', ',', 2, '' ) },
+                ],
+                "columnDefs": [
+                    {
+                        "targets": -1,
+                        "data": null,
+                        "defaultContent": ""
+                    },
+                    { className: "date", "targets": [0] },
+                    { className: "fournisseur", "targets": [1] },
+                    { className: "bl", "targets": [2] },
+                    { className: "code", "targets": [3] },
+                    { className: "designation", "targets": [4] },
+                    { className: "quantite", "targets": [5] },
+                    { className: "prix-unitaire", "targets": [6] },
+                    { className: "prix-total", "targets": [7] },
+                    {
+                        className: `action 
+                            {% if app.user.getTransportGarage() == '1' %}
+                                enable-link
+                            {% else %}
+                                 disable-link
+                            {% endif %}`,
+                        "targets": 8,
+                        "createdCell": function (td, cellData, rowData, row, col) {
+                            
+                            $(td).html(
+                                `<a href="#" 
+                                    data-id-piece-entre="`+rowData.id+`"
+                                    data-code-piece-entre="`+rowData.code+`"
+                                    data-date-piece-entre="`+rowData.date+`"
+                                    data-qte-piece-entre="`+rowData.qte+`"
+                                    class="delete_piece_entre">
+                                    <span class="fa fa-trash-o"></span>
+                                </a>
+                            `);
+                        }
+                    },
+                ],
+                "footerCallback": function ( row, data, start, end, display ) {
+                    var format = new Intl.NumberFormat();
+                    var api = this.api();
+
+                    // Remove the formatting to get integer data for summation
+                    var intVal = function ( i ) {
+                        return typeof i === 'string' ?
+                            parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+
+                    // Total over all pages
+                    /*total = api
+                        .column( 8 )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);*/
+
+                    // Total over this page
+                    pageTotal = api
+                        .column( 7, { page: 'current'} )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+
+                    // Update footer
+                    $( api.column( 7 ).footer() ).html(
+                        '<span class="montant">'+format.format(pageTotal)+'</span> <span class="unite_ar">Ar</span>'
+                    );
+                },
+                //annule le tri
+                order : [[0 , 'desc']],
+                ordering : true, 
+                searching:true,
+                responsive: true,
+                scrollY: false,
+                scrollX: true,
+                scrollCollapse: true,
+                paging: true,
+                autoFill: true
+            });
+            new $.fn.dataTable.FixedHeader(table);
+            // delete piece entré
+            $(document).on('click', '.delete_piece_entre', function(ev){
+                ev.preventDefault();
+                const self = $(this);
+                var data = {
+                    qtePieceEntre : $(this).attr('data-qte-piece-entre'),
+                    id_piece_entre : $(this).attr('data-id-piece-entre'),
+                    date : $(this).attr('data-date-piece-entre'),
+                    code : $(this).attr('data-code-piece-entre')
+                }
+                var test = confirm("Voulez-vous vraiment supprimer cette ligne ?");
+                if(test){
+                     $.ajax({
+                        url : '/profile/trans/delete-piece-entre', // PieceController
+                        type : 'POST',
+                        data :data,
+                        beforeSend : function(){
+                            self.html('Patienter...');
+                        },
+                        success : function(response){
+                            if(response == 'deleted'){
+                                table.ajax.reload(function(response){
+                                    console.log(response)
+                                }, false);
+                            }else{
+                                alert("La quantité au stock est inférieur à " + data.qtePieceEntre + " qui a été la quantité entrée.");
+                            }
+                        },
+                        complete : function(){
+                            self.html(`<span class="fa fa-trash-o"></span>`);
+                        },
+                        error : function(err){
+                            console.log(err.message);
+                        }
+                    })
+                }
+            })
+            
+            $('#mySearchText').on( 'keyup', function () {
+                table.search($(this).val()).draw();
+            });
+
+            $('#input-prix').on( 'input change', function () {
+                var prix = parseFloat($(this).val().replace(/ /g,''));
+                var qte = $('input[name=qte]').val();
+                var format = new Intl.NumberFormat();
+                $(this).val($(this).val().replace(/ /g,""));
+                $(this).val($(this).val().replace(/\B(?=(\d{3})+(?!\d))/g, " "));
+                $('#input-prix-total').val(format.format((qte*prix).toFixed(2)).replace(',', '.'));
+            });
+            $('#qte-input').on('keyup change', function () {
+                $('#input-prix').change();
+            })
+
+            var forms = document.getElementsByClassName('form-new-piece');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault(false);
+                    if (form.checkValidity() === false) {;
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }else{
+                        var myform = $('form.form-new-piece')[0];
+                        var formData = new FormData(myform);
+                        formData.append('prix_total', $('#input-prix-total').val().replace(/\s/g, ''));
+                        formData.append('prix', $('#input-prix').val().replace(/\s/g, ''));
+                        $.ajax({
+                            type: "POST",
+                            url: "/profile/piece/new",
+                            data: formData,
+                            contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                            processData: false, // NEEDED, DON'T OMIT THIS
+                            beforeSend: function(){
+                                $('#new-piece').html('PATIENTER...');
+                                //$('#new-piece').prop('disabled',true);
+                            },
+                            success: function(response) {
+                                if("success" == response.value){
+                                    $('#new-piece').html('VALIDER');
+                                    $('#new-piece').prop('disabled',false);
+                                    $('form.form-new-piece').trigger("reset");
+                                    table.ajax.reload(function(response){
+                                        $('#modal-entree-piece').modal('toggle');
+                                    }, false);
+                                }
+                            },
+                        });
+                    }
+                });
+            })
+            $('#export').on('click',function () {
+                table.buttons('.buttons-excel').trigger();
+            })
+        })
+    </script>
+{% endblock %}

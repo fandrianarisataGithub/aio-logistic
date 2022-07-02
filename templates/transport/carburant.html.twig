@@ -1,0 +1,1574 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Carburant{% endblock %}
+{% block body %}
+<div id="app">
+    <div class="title-page-trans">
+        <h1 class="fs-primary">Carburant entrés et (-)sorties</h1>
+    </div>
+    <div class="badg-container d-flex align-items-center">
+        <div class="badge">
+            <div class="badge-description d-flex">
+                <div class="icone icone-carb">
+                    <img class="img-carburant" src="{{ asset('images/icones_trans/badge/carburant.svg') }}" alt="carburant enac">
+                </div>
+                <div class="badge-title">
+                    <h3>Stock <br>Cuve Diesel</h3>
+                </div>
+            </div>
+            <div class="badge-value">
+            <h3>
+                <span id = "montant-stock-gasoil" class="montant"></span><span class="unite_lt">Lt</span>
+            </h3>
+            </div>
+        </div>
+    </div>
+    <div class="array">
+        <div class="array-head">
+            <div class="part d-flex">
+                <div class="input-content input-search-trans-array">
+                    <span class="fa fa-search"></span><input id="mySearchText" type="text" placeholder="Recherche">
+                </div>
+                <div class="input-date-filter">
+                    <span class="icone_calenadr">
+                        <img src="{{ asset('images/icones_trans/calendar.svg') }}" alt="calendar">
+                    </span>
+                    <input type="date" id="date1">
+                    <span>-</span>
+                    <input type="date" id="date2">
+                    <button @click.prevent="refreshTable" class="btn-filter">Filtrer</button>
+                </div>
+            </div>
+            <div class="part d-flex">
+                <div class="maj-export">
+                    <a @click.prevent="openCarbModalForEdit('create')" href="#" id="maj"  
+                        {% if app.user.transportCarburant == '1' %}
+                           class="fond-lightOrange btn-maj nouveau-vehicule"
+                        {% else %}
+                            class="fond-lightOrange btn-maj nouveau-vehicule d-none"
+                        {% endif %}
+                    >
+                        <ion-icon name="add-outline"></ion-icon>
+                        <span>Inserer</span>
+                    </a>
+                    <a href="#" id="export" class="fond-lightGreen btn-maj">
+                        <span><img src="{{ asset('images/icones_trans/export.svg') }}" alt="export"></span>
+                        <span>Export Excel</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="trans_tableau">
+            <table id="tableau-carburant" class="table" style="width:100%" >
+                <thead>
+                    <tr>
+                        <th><div class="date">DATE-HEURE</div></th>
+                        <th><div class="station">STATION</div></th>
+                        <th><div class="vehicule">VEHICULE</div></th>
+                        <th><div class="kilometrage">KILOMETRAGE</div></th>
+                        <th><div class="chauffeur">CHAUFFEUR</div></th>
+                        <th><div class="client">CLIENT</div></th>
+                        <th><div class="type">TYPE</div></th>
+                        <th><div class="litrage">LITRAGE</div></th>
+                        <th><div class="fond">FOND</div></th>
+                        <th><div class="fond">CONSOMMATION</div></th>
+                        <th><div class="trajet">TRAJET</div></th>
+                        <th><div class="montant-ttc">MONTANT</div></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>  
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5">
+                        </td>
+                        <td colspan="2" style="text-align:end;">
+                            TOTAL(L) :
+                        </td>
+                        <td colspan="2" style="text-align:start;background:#99A4B8;">
+                            <span class="montant"></span> <span class="unite_ar">L</span>
+                        </td>
+                        <td colspan="1" style="text-align:end;">
+                            TOTAL TTC :
+                        </td><td colspan="1">
+                        </td>
+                        <td colspan="1" style="text-align:start;background:#99A4B8;">
+                            <span class="montant"></span> <span class="unite_ar">Ar</span>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-carburant" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-pagination flex-row-reverse d-flex my-4">
+                        <button v-if="isEntre" @click.prevent="toggleEntry" class="btn-paginate-modal" :class="isEntry ? 'active' : ''">ENTREE</button>
+                        <button v-if="isSortie" @click.prevent="toggleEntry" class="btn-paginate-modal mx-2" :class="!isEntry ? 'active' : ''">SORTIE</button>
+                    </div>
+                </div>
+                <div v-show="isEntry" class="modal-body modal-body-entree no-mt">
+                    <form @submit.prevent="validerEntre" 
+                        class="d-flex justify-content-between form-modal form-new-carburant">
+                        <div class="form-part">
+                            <div class="form-group">
+                                <label class="label-modal" for="">DATE/HEURE</label>
+                                <input v-model="createdAtEntre" id="createdAt-entre" type="datetime-local" class="input-modal" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">TYPE</label>
+                                <select 
+                                    v-model="typeEntre"
+                                    class="selectpicker" 
+                                    data-show-subtext="true" 
+                                    data-live-search="true" 
+                                    id="type-entre"
+                                    required
+                                >
+                                    <option value="GASOIL">GASOIL</option>
+                                    <option value="ESSENCE">ESSENCE</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal"  for="">LITRAGE</label>
+                                <input v-model="currencyLitrageEntre" id="litrage-entre" placeholder="350" type="text" class="input-modal" required>
+                            </div>
+                        </div>
+                        <div class="form-part">
+                            <div class="fomr-part-input-liste">
+                                <div class="form-group">
+                                    <label class="label-modal" for="">MONTANT TTC</label>
+                                    <input
+                                        v-model="currencyMontantEntre" 
+                                        id="montant-entre" placeholder="1 000 000 Ar" type="text" class="input-modal" required>
+                                </div>
+                            </div>
+                            <div class="button-valider">
+                                <button id="valider-entre" type="submit" :data-is-create = "isModalCreate" class="btn btn-primary">
+                                    ${ isModalCreate ? 'VALIDER' : 'MODIFIER'}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div v-show="!isEntry" class="modal-body modal-body-sortie no-mt">
+                    <form @submit.prevent="validerSortie" 
+                        action="" class="d-flex justify-content-between form-modal form-new-carburant">
+                        <div class="form-part">
+                            <div class="form-group">
+                                <label class="label-modal" for="">DATE/HEURE</label>
+                                <input v-model="createdAtSortie" id="createdAt-sortie" type="datetime-local" class="input-modal" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">STATION</label>
+                                <select
+                                    v-model="stationSortie"
+                                    class="selectpicker" 
+                                    data-show-subtext="true" 
+                                    data-live-search="true" 
+                                    id="station-sortie"
+                                    required
+                                    data-size="5"
+                                >
+                                    <option v-for="(station, i) in listStation" :key="i" 
+                                        :value="station.nom">${station.nom}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">VEHICULE</label>
+                                <select
+                                v-model="vehiculeSortie"
+                                    class="selectpicker" 
+                                    data-show-subtext="true" 
+                                    data-live-search="true" 
+                                    id="vehicule"
+                                    data-size="5"
+                                    required
+                                >
+                                    <option 
+                                        v-for="(vehicule, index) in listVehicule" :key="index"
+                                        :value="vehicule.immatriculation"
+                                    >
+                                        ${ vehicule.immatriculation }
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">KILOMETRAGE</label>
+                                <input 
+                                    v-model="currencyKilo" 
+                                    id="kilometrage-sortie" placeholder="805000" type="text" class="input-modal" required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal" for="">CHAUFFEUR</label>
+                                {# <input v-model="chauffeurSortie" id="chauffeur-sortie" placeholder="Nom du chauffeur" type="text" class="input-modal"> #}
+                                <select
+                                    v-model="chauffeurSortie" id="chauffeur-sortie"
+                                    class="selectpicker" 
+                                    data-show-subtext="true" 
+                                    data-live-search="true" 
+                                    data-size="5"
+                                    required
+                                >
+                                    <option 
+                                        v-for="(chauffeur, index) in listChauffeur" 
+                                        :value="chauffeur.matricule"
+                                        :key="index"
+                                    >
+                                        ${ chauffeur.appellation }
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-modal"  for="">CLIENT</label>
+                                <select
+                                    v-model="clientSortie" id="client-sortie"
+                                    class="selectpicker" 
+                                    data-show-subtext="true" 
+                                    data-live-search="true" 
+                                    required
+                                    data-size="5"
+                                >
+                                    <option 
+                                        v-for="(client, i) in listClient" 
+                                        :value="client.nom"
+                                        :key="i"
+                                    >
+                                        ${ client.nom }
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-part">
+                            <div class="fomr-part-input-liste">
+                                <div class="form-group">
+                                    <label class="label-modal" for="">TYPE</label>
+                                    <select 
+                                        v-model="typeSortie"
+                                        class="selectpicker" 
+                                        data-show-subtext="true" 
+                                        data-live-search="true" 
+                                        id="type-sortie"
+                                        required
+                                    >
+                                        <option value="GASOIL">GASOIL</option>
+                                        <option value="ESSENCE">ESSENCE</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal"  for="">LITRAGE</label>
+                                    <input v-model="currencyLitrageSortie" id="litrage-sortie" placeholder="350" type="text" class="input-modal"
+                                        :class="errorLitrage ? 'litrage-error' : ''"
+                                     required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">FOND RESERVOIR</label>
+                                    <input v-model="currencyFondSortie" id="fond-reservoir-sortie" type="text" placeholder="50" class="input-modal" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">TRAJET</label>
+                                    <select
+                                        v-model="trajetSortie" id="trajet-sortie"
+                                        class="selectpicker" 
+                                        data-show-subtext="true" 
+                                        data-live-search="true" 
+                                        required
+                                        data-size="5"
+                                    >
+                                        <option 
+                                            v-for="(trajet, i) in listTrajet" 
+                                            :value="trajet.nom"
+                                            :key="i"
+                                        >
+                                            ${ trajet.nom }
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label-modal" for="">MONTANT TTC</label>
+                                    <input v-model = "currencyMontantSortie" id="montant-sortie" placeholder="1 000 000 Ar" type="text" class="input-modal" required>
+                                </div>
+                            </div>
+                            <div v-if="errorLitrage" class="bande_error bg-danger text-white p-3 my-2 mb-20">LE STOCK DISPONIBLE EST INSUFISANT</div>
+                            <div class="button-valider">
+                                <button id="valider-sortie" type="submit" :data-is-create = "isModalCreate" class="btn btn-primary">
+                                    ${ isModalCreate ? 'VALIDER' : 'MODIFIER'}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-fiche-vehicule" tabindex="-1" role="dialog" aria-labelledby="exemple-fiche-vehicule" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="title-modal" class="modal-title secondary-title">FICHE VEHICULE</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-fiche d-flex">
+                    <div class="img col-sm-5">
+                        <img id="image-modal" src="" alt="">
+                    </div>
+                    <div class="description col-sm-7">
+                        <ul>
+                            <li class="matricule">
+                                <span id="immatriculation-modal"></span>
+                            </li>
+                            <li class="marque">
+                                <span id="marque-modal"></span>
+                            </li>
+                            <li class="centre">
+                                <span id="centre-modal"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-body-nav">
+                        <nav class="array-nav">
+                            <ul class="d-flex justify-content-between">
+                                <li><span @click="chooseVoyage" :class="{active : isVoyage}">VOYAGE EFFECTUES</span></li>
+                                <li><span @click="chooseCarburant" :class="{active : isCarburant}">CARBURANT</span></li>
+                                <li><span @click="choosePneus" :class="{active : isPneus}">PNEUS</span></li>
+                                <li><span @click="chooseEntretien" :class="{active : isEntretien}">ENTRETIEN</span></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="modal-body-arrays array">
+                        <div class="trans_tableau in-modal">
+                            <table v-show="isVoyage" class="table table-in-modal" id="modal-array-voyage">
+                                <thead>
+                                <tr>
+                                    <th class="chauffeur">CHAUFFEUR</th>
+                                    <th class="client">CLIENT</th>
+                                    <th class="ot">OT</th>
+                                    <th class="date">DATE DEBUT</th>
+                                    <th class="date">DATE FIN</th>
+                                    <th class="trajet">TRAJET</th>
+                                    <th class="trajet">MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-voyage">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="6">TOTAL</td>
+                                    <td id="total_montant_voyage" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isCarburant" class="table table-in-modal" id="modal-array-carburant">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE/HEURE</th>
+                                    <th class="station">STATION</th>
+                                    <th class="kilometrage">KILOMETRAGE</th>
+                                    <th class="chauffeur">CHAUFFEUR</th>
+                                    <th class="client">CLIENT</th>
+                                    <th class="type">TYPE</th>
+                                    <th class="litrage">LITRAGE</th>
+                                    <th class="fond">FOND</th>
+                                    <th class="fond">CONSO</th>
+                                    <th class="station">TRAJET</th>
+                                    <th class="montant">MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-carburant">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="10">TOTAL</td>
+                                    <td id="total_montant_carburant" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isPneus" class="table table-in-modal" id="modal-array-pneus">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE/HEURE</th>
+                                    <th class="kilometrage">KILOMETRAGE</th>
+                                    <th class="num_serie">N° SERIE</th>
+                                    <th class="marque">MARQUE</th>
+                                    <th class="ref">REFERENCE</th>
+                                    <th class="position">POSITION</th>
+                                    <th>MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-pneu">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="6">TOTAL</td>
+                                    <td id="total_montant_pneu" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isEntretien" class="table table-in-modal" id="modal-array-entretien">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE DEBUT</th>
+                                    <th class="date">DATE FIN</th>
+                                    <th class="km">KM</th>
+                                    <th class="ot">OT</th>
+                                    <th class="motif">MOTIF</th>
+                                    <th class="pieces">PIECES</th>
+                                    <th class="intyervenant">INTERVENANT</th>
+                                    <th class="commentaire">COMMENTAIRE</th>
+                                    <th class="montant">COUT TOTAL</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-entretien">
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="8">TOTAL</td>
+                                    <td id="total_montant_intervenation" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modal-fiche-chauffeur" tabindex="-1" role="dialog" aria-labelledby="exemple-fiche-chauffeur" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="title-modal" class="modal-title secondary-title">FICHE CHAUFFEUR</h2>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-fiche d-flex">
+                    <div class="img col-sm-5">
+                        <img id="image-modal-chauffeur" src="/images/icones_trans/avatar.png" alt="">
+                    </div>
+                    <div class="description col-sm-7">
+                        <ul>
+                            <li class="row matricule">
+                                <div class="col-md-6">NOM</div> <div class="col-md-6"><span id="nom-modal"></span></div>
+                            </li>
+                            <li class="row marque">
+                                <div class="col-md-6">APPELLATION</div> <div class="col-md-6"><span id="appelation-modal"></span></div>
+                            </li>
+                            <li class="row centre">
+                                <div class="col-md-6">MATRICULE</div> <div class="col-md-6"><span id="matricule-modal"></span></div>
+                            </li>
+                            <li class="row centre">
+                                <div class="col-md-6">AGE</div> <div class="col-md-6"><span id="age-modal"></span></div>
+                            </li>
+                            <li class="row matricule">
+                                <div class="col-md-6">DATE D'EMBAUCHE</div> <div class="col-md-6"><span id="embauche-modal"></span></div>
+                            </li>
+                            <li class="row marque">
+                                <div class="col-md-6">ANNCIENNETE</div> <div class="col-md-6"><span id="anciennete-modal"></span></div>
+                            </li>
+                            <li class="row marque">
+                                <div class="col-md-6">CIN</div> <div class="col-md-6"><span id="cin-modal"></span></div>
+                            </li>
+                            <li class="row centre">
+                                <div class="col-md-6">PERMIS</div> <div class="col-md-6"><span id="permis-modal"></span></div>
+                            </li>
+                            <li class="row centre">
+                                <div class="col-md-6">PROCHAIN VISITE</div> <div class="col-md-6" id="visite-modal"></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-body-nav">
+                        <nav class="array-nav">
+                            <ul class="d-flex justify-content-between">
+                                <li><span @click="chooseVoyage" :class="{active : isVoyage}">VOYAGE EFFECTUES</span></li>
+                                <li><span @click="chooseCarburant" :class="{active : isCarburant}">CARBURANT</span></li>
+                                <li><span @click="choosePneus" :class="{active : isPneus}">PNEUS</span></li>
+                                <li><span @click="chooseEntretien" :class="{active : isEntretien}">ENTRETIEN</span></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="modal-body-arrays array">
+                        <div class="trans_tableau in-modal">
+                            <table v-show="isVoyage" class="table table-in-modal" id="modal-array-voyage">
+                                <thead>
+                                <tr>
+                                    <th class="chauffeur">VEHICULE</th>
+                                    <th class="client">CLIENT</th>
+                                    <th class="ot">OT</th>
+                                    <th class="date">DATE DEBUT</th>
+                                    <th class="date">DATE FIN</th>
+                                    <th class="trajet">TRAJET</th>
+                                    <th class="trajet">MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-voyage-chauffeur">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="6">TOTAL</td>
+                                    <td id="total_montant_voyage_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isCarburant" class="table table-in-modal" id="modal-array-carburant">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE/HEURE</th>
+                                    <th class="station">STATION</th>
+                                    <th class="kilometrage">KILOMETRAGE</th>
+                                    <th class="chauffeur">VEHICULE</th>
+                                    <th class="client">CLIENT</th>
+                                    <th class="type">TYPE</th>
+                                    <th class="litrage">LITRAGE</th>
+                                    <th class="fond">FOND</th>
+                                    <th class="station">TRAJET</th>
+                                    <th class="montant">MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-carburant-chauffeur">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="9">TOTAL</td>
+                                    <td id="total_montant_carburant_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isPneus" class="table table-in-modal" id="modal-array-pneus">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE/HEURE</th>
+                                    <th class="chauffeur">VEHICULE</th>
+                                    <th class="kilometrage">KILOMETRAGE</th>
+                                    <th class="num_serie">N° SERIE</th>
+                                    <th class="marque">MARQUE</th>
+                                    <th class="ref">REFERENCE</th>
+                                    <th class="position">POSITION</th>
+                                    <th>MONTANT</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-pneu-chauffeur">
+
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="7">TOTAL</td>
+                                    <td id="total_montant_pneu_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                            <table v-show="isEntretien" class="table table-in-modal" id="modal-array-entretien">
+                                <thead>
+                                <tr>
+                                    <th class="date">DATE DEBUT</th>
+                                    <th class="date">DATE FIN</th>
+                                    <th class="chauffeur">VEHICULE</th>
+                                    <th class="km">KM</th>
+                                    <th class="ot">OT</th>
+                                    <th class="motif">MOTIF</th>
+                                    <th class="pieces">PIECES</th>
+                                    <th class="intyervenant">INTERVENANT</th>
+                                    <th class="commentaire">COMMENTAIRE</th>
+                                    <th class="montant">COUT TOTAL</th>
+                                </tr>
+                                </thead>
+                                <tbody id="body-entretien-chauffeur">
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="text-align:end;" colspan="9">TOTAL</td>
+                                    <td id="total_montant_intervenation_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js'></script>
+    <script src='https://cdn.datatables.net/plug-ins/1.11.5/sorting/datetime-moment.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js'></script>
+    <script src='https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js'></script>
+    <script src='https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js'></script>
+    <script>
+        // slim select
+        // jquery
+        $(document).ready(function(){
+            $.fn.dataTable.moment( 'DD-MM-YYYY HH:mm' );
+            window.table = $('#tableau-carburant').DataTable({
+                buttons: [
+                    {extend: 'excel', footer: true }
+                ],
+                "language": {
+                    "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                    "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                    "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                    "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                    "sInfoPostFix": "",
+                    "sInfoThousands": ",",
+                    "sLengthMenu": "Afficher _MENU_ éléments",
+                    "sLoadingRecords": "Chargement...",
+                    "sProcessing": "Traitement...",
+                    "sSearch": "Rechercher :",
+                    "sZeroRecords": "Aucun élément correspondant trouvé",
+                    "oPaginate": {
+                        "sFirst": "Premier",
+                        "sLast": "Dernier",
+                        "sNext": "Suivant",
+                        "sPrevious": "Précédent"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                        "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                    },
+                    "select": {
+                        "rows": {
+                            "_": "%d lignes sélectionnées",
+                            "0": "Aucune ligne sélectionnée",
+                            "1": "1 ligne sélectionnée"
+                        }
+                    }
+                },
+				"ajax" : {
+                    url : "/profile/transport/list/carburant",
+                    type : 'POST',
+                    data: function(d){
+                        d.date1 = $('#date1').val();
+                        d.date2 = $('#date2').val();
+                    },
+                    "dataSrc":"",
+
+				},
+                 columns: [
+                    { data: 'date' },
+                    { data: 'station' },
+                    { data: 'vehicule_imm' },
+                    { 
+                        data: 'kilometrage',
+                        render: $.fn.dataTable.render.number( ' ', ',', 0, '' )
+                    },
+                    { data: 'chauffeur_aff' },
+                    { data: 'client' },
+                    { data: 'type' },
+                    { 
+                        data: 'litrage',
+                        render: $.fn.dataTable.render.number( ' ', ',', 0, '' )
+                    },
+                    { 
+                        data: 'fond',
+                        render: $.fn.dataTable.render.number( ' ', ',', 0, '' )
+                    },
+                    { data: 'conso' },
+                    { data: 'trajet' },
+                    {
+                        data: 'montant',
+                        render: $.fn.dataTable.render.number( ' ', ',', 0, '' ) // mille "separator" decimal unité
+                    },
+                    {data : 'action'}
+                ],
+                "columnDefs": [
+                    /*{
+                        "targets": -1,
+                        "data": null,
+                        "createdCell": function (td, cellData, rowData, row, col){
+                            $(td).html(`
+                                <a href="#" data-id="`+ cellData.id +`" data-nature="" class="edit_carb">
+                                    <span class="fa fa-pencil"></span>
+                                </a>
+                                <a href="#" data-id="`+ cellData.id +`" class="delete_carb">
+                                    <span class="fa fa-trash-o"></span>
+                                </a>
+                            `)
+                        }
+                    },*/
+                    { className: "date", "targets": [0] },
+                    { className: "station", "targets": [1] },
+                    {
+                        className: "vehicule", "targets": [2],
+                        createdCell: function(td, cellData, rowData, row, col) {
+                            if (cellData) {
+                                $(td).html(`<span onclick="loadVehicule(` +rowData.vehicule_id +`)">`+ cellData +`</span>`);
+                            }
+                        }
+                    },
+                    { className: "kilometrage", "targets": [3] },
+                    {
+                        className: "chauffeur loadChauffeur", "targets": [4],
+                        createdCell: function(td, cellData, rowData, row, col) {
+                            if (cellData) {
+                                $(td).html(`<span onclick="loadChauffeur(` +rowData.chauffeur_id +`)">`+ cellData +`</span>`);
+                            }
+                        }
+                    },
+                    { className: "client", "targets": [5] },
+                    { className: "type", "targets": [6] },
+                    { 
+                        className: "litrage", 
+                        "targets": [7],
+                        createdCell: function(td, cellData, rowData, row, col) {
+                            if (parseInt(cellData) < 0) {
+                                $(td)
+                                .addClass('negative-litrage');
+                            }
+                        }
+                    },
+                    { className: "fond", "targets": [8] },
+                    { className: "consommation", "targets": [9] },
+                    { className: "trajet", "targets": [10] },
+                    { 
+                        className: "montant", 
+                        "targets": [11] ,
+                        createdCell: function(td, cellData, rowData, row, col) {
+                            if (parseInt(cellData) < 0) {
+                                $(td)
+                                .addClass('negative');
+                            }
+                        }
+                    },
+                    { className: `action 
+                            {% if app.user.getTransportCarburant() == '1' %}
+                                enable-link
+                            {% else %}
+                                 disable-link
+                            {% endif %}`, "targets": [12], "orderable" : false },
+                ],
+                "footerCallback": function ( row, data, start, end, display ) {
+                    var format = new Intl.NumberFormat();
+                    var api = this.api();
+                    // Remove the formatting to get integer data for summation
+                    var intVal = function ( i ) {
+                        return typeof i === 'string' ?
+                            parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+
+                    var totalTTC = 0;
+                    var totalL = 0;
+                    var api = this.api();
+
+                    api
+                        .cells(null, 11, {
+                            page: 'current'
+                        })
+                        .nodes()
+                        .each(function(n) {
+                            if ($(n)
+                                .hasClass('negative')) {
+                                totalTTC += intVal($(n)
+                                .text());
+                            }
+                        })
+                    api
+                        .cells(null, 7, {
+                            page: 'current'
+                        })
+                        .nodes()
+                        .each(function(n) {
+                            if ($(n)
+                                .hasClass('negative-litrage')) {
+                                totalL += intVal($(n)
+                                .text());
+                            }
+                        })
+
+                    // Update footer
+                    $( api.column( 11 ).footer() ).html(
+                        '<span class="montant" style="white-space: nowrap;">'+format.format(totalTTC)+'</span> <span class="unite_ar">Ar</span>'
+                    );
+                    $( api.column( 7 ).footer() ).html(
+                        '<span class="montant" style="white-space: nowrap;">'+format.format(totalL)+'</span> <span class="unite_ar">L</span>'
+                    );
+                },
+                
+                //annule le tri
+                "aaSorting": [],
+                "order": [],
+                ordering : true, 
+                searching:true,
+                responsive: true,
+                scrollY: false,
+                scrollX: true,
+                scrollCollapse: true,
+                paging: true,
+                autoFill: true
+            });
+            new $.fn.dataTable.FixedHeader(window.table);
+            $('#mySearchText').on( 'keyup', function () {
+                window.table.search($(this).val()).draw();
+            });
+            $('#export').on('click',function () {
+                window.table.buttons('.buttons-excel').trigger();
+            })
+        })
+
+        function loadVehicule(id) {
+            app.loadVehicule(id);
+        }
+        function loadChauffeur(id) {
+            app.loadChauffeur(id);
+        }
+    </script>
+    <script>
+        // vue
+         Vue.config.ignoredElements = [/^ion-/]
+        var app = new Vue({
+            el:"#app",
+            delimiters:['${', '}'],
+            data(){
+                return {
+                    isEntry : false, // pour l'animation active
+                    listVehicule : [],
+                    listChauffeur : [],
+                    listStation : [],
+                    listTrajet : [],
+                    listClient : [],
+                    isModalCreate : true,
+                    errorLitrage : false,
+                    carbId : null,
+                    //pour els animation de bouton dans form modal
+                    isEntre : true,
+                    isSortie : true,
+                    // data formm
+                    // entre 
+                    typeEntre : '',
+                    litrageEntre : '',
+                    montantEntre : '',
+                    createdAtEntre : '',
+                    // sortie
+                    createdAtSortie : '',
+                    clientSortie : '',
+                    typeSortie : '',
+                    litrageSortie : '',
+                    montantSortie : '',
+                    stationSortie : '',
+                    vehiculeSortie : '',
+                    kilometrageSortie: '',
+                    chauffeurSortie : '',
+                    fondReservoirSortie : '',
+                    trajetSortie : '',
+                    isVoyage : true,
+                    isCarburant : false,
+                    isPneus : false,
+                    isEntretien : false,
+                }
+            },
+            computed :{
+                currencyKilo : {
+                    get(){
+                        return this.kilometrageSortie.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+                    },
+                    set(val){
+                        this.kilometrageSortie = val
+                    }
+                },
+                currencyMontantEntre : {
+                    get(){
+                        return this.montantEntre.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+                    },
+                    set(val){
+                        this.montantEntre = val
+                    }
+                },
+                currencyMontantSortie : {
+                    get(){
+                        return this.montantSortie.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+                    },
+                    set(val){
+                        this.montantSortie = val
+                    }
+                },
+                currencyLitrageEntre : {
+                    get(){
+                        return this.litrageEntre.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+                    },
+                    set(val){
+                        this.litrageEntre = val
+                    }
+                },
+                currencyLitrageSortie : {
+                    get(){
+                        return this.litrageSortie.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+                    },
+                    set(val){
+                        this.litrageSortie = val
+                    }
+                },
+                currencyFondSortie : {
+                    get(){
+                        return this.fondReservoirSortie.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+                    },
+                    set(val){
+                        this.fondReservoirSortie = val
+                    }
+                }
+            },
+            created(){
+                // load vehicule et chauffeur
+                axios.interceptors.request.use((config) => {
+                    $("#maj span:last-child").text("PATIENTER ...");
+                    $("#maj").prop('disabled',true);
+                    return config;
+                }, (error) => {
+                    return Promise.reject(error);
+                });
+
+                axios.interceptors.response.use((response) => {
+                    $("#maj span:last-child").text("Inserer");
+                    $("#maj").prop('disabled',false);
+                    return response;
+                }, (error) => {
+                    
+                    return Promise.reject(error);
+                });
+                axios.get('{{ path("load_chauffeur_vehicule_client_station_trajet") }}')
+                .then((response) => {
+                    this.listVehicule = response.data.vehicule;
+                    this.listChauffeur = response.data.chauffeur;
+
+                    this.listStation = response.data.station;
+                    this.listTrajet = response.data.trajet;
+                    this.listClient = response.data.client;
+                    $('.selectpicker').selectpicker('refresh');
+                }, (error) => {
+                    console.error("Erreur listing vahicule et chauffeur dans les select");
+                });
+            },
+            mounted(){
+                this.refreshstock()
+                $('.selectpicker').selectpicker();
+            },
+            methods:{
+                refreshstock(){
+                    $.ajax({
+                        url : "/profile/carburant/totalCarb-stock",
+                        type : "POST",
+                        beforeSend : function(){
+                            $('#montant-stock-gasoil').text('Chargement ... ');
+                            $('#montant-stock-gasoil').css('font-size', '11px');
+                        },
+                        success : function(response){
+                            $('#montant-stock-gasoil').text(new Intl.NumberFormat().format(response.gasoil));           
+                        },
+                        complete : function(){
+                            $('#montant-stock-gasoil').css('font-size', '25px');
+                        },
+                        error : function(){
+                            console.error('load total carb stock')
+                        }
+                    })
+                },
+                refreshTable(){
+                    window.table.ajax.reload(function(response){
+                       
+                    }, false);
+                },
+                setOnlyToNumKilometrage(event){
+                    let val = event.data.trim();
+                    if (!/^[1-9]\d*$|^$/.test(val)) { // si ce n'est pas un chiffre
+                        event.kilometrageSortie = "";
+                    } 
+                },
+                openCarbModalForEdit(type){
+                    if(type == "entre"){
+                        this.isSortie = false;
+                        this.isEntre = true;
+                    }
+                    if(type == "sortie"){
+                        this.isSortie = true;
+                        this.isEntre = false;
+                    }else{
+                        this.resetAllform();
+                        this.isEntry = false;
+                        this.isSortie = true;
+                        this.isEntre = true;
+                        this.isModalCreate = true;
+                    }
+                    var modal = $("#modal-carburant");
+                    $('.selectpicker').selectpicker('refresh');
+                    modal.modal('show');
+                },
+                closeCarbModal(){
+                    var modal = $("#modal-carburant");
+                    $('.selectpicker').selectpicker('refresh');
+                    modal.modal('hide');
+                },
+                resetAllform(){
+                    this.typeEntre="";
+                    this.litrageEntre="";
+                    this.montantEntre="";
+                    // sortie
+                    this.createdAtSortie="";
+                    this.typeSortie="";
+                    this.clientSortie="";
+                    this.litrageSortie="";
+                    this.montantSortie="";
+                    this.stationSortie="";
+                    this.vehiculeSortie="";
+                    this.kilometrageSortie="";
+                    this.chauffeurSortie="";
+                    this.fondReservoirSortie="";
+                    this.trajetSortie="";
+                },
+                toggleEntry(){
+                    this.isEntry = !this.isEntry
+                },
+                validerEntre : function(){
+                  
+                    let data = {
+                        //createdAtEntre : this.createdAtEntre, // on ne va pas l'utiliser on utilisera l'heure généré par le serveur
+                        typeEntre : this.typeEntre,
+                        createdAtEntre : this.createdAtEntre,
+                        litrageEntre : this.litrageEntre.replaceAll(' ', ''),
+                        montantEntre : this.montantEntre.replaceAll(' ', ''),
+                        typeAction : 'entre',
+                        id : null
+                    }
+                    if(this.isSortie == false){
+                       data = {
+                            //createdAtEntre : this.createdAtEntre, // on ne va pas l'utiliser on utilisera l'heure généré par le serveur
+                            typeEntre : this.typeEntre,
+                            litrageEntre : this.litrageEntre.replaceAll(' ', ''),
+                            montantEntre : this.montantEntre.replaceAll(' ', ''),
+                            typeAction : 'entre',
+                            createdAtEntre : this.createdAtEntre,
+                            id : this.carbId
+                        }
+                    }
+                    axios.interceptors.request.use((config) => {
+						$("#valider-entre").text("PATIENTER ...");
+                        $("#valider-entre").prop('disabled',true);
+						return config;
+					}, (error) => {
+						return Promise.reject(error);
+					});
+					axios.interceptors.response.use((response) => {
+						$("#valider-entre").text("VALIDER");
+                        $("#valider-entre").prop('disabled',false);
+						return response;
+					}, (error) => {
+						return Promise.reject(error);
+					});
+					
+                    axios.post('{{ path("valider_carburant") }}', data)
+                    .then((response) => {
+                        if(response.data.code == 0 && response.data.value == "success"){
+                             this.refreshstock();
+                            this.refreshTable();
+                            this.resetAllform();
+                            this.closeCarbModal();
+                        }
+                    }, (error) => {
+                        console.error("Erreur valider entré");
+                    });
+                },
+                validerSortie : function(){
+                    let data = {
+                        createdAtSortie : this.createdAtSortie, // on ne va pas l'utiliser on utilisera l'heure généré par le serveur
+                        typeSortie : this.typeSortie,
+                        clientSortie : this.clientSortie,
+                        litrageSortie : this.litrageSortie.replaceAll(' ', '').replaceAll('-', ''),
+                        montantSortie : this.montantSortie.replaceAll(' ', '').replaceAll('-', ''),
+                        stationSortie : this.stationSortie,
+                        immatriculationSortie : this.vehiculeSortie,
+                        kilometrageSortie: this.kilometrageSortie.replaceAll(' ', ''),
+                        chauffeurSortie : this.chauffeurSortie,
+                        fondReservoirSortie : this.fondReservoirSortie.replaceAll(' ', ''),
+                        trajetSortie : this.trajetSortie,
+                        typeAction : 'sortie',
+                        id : null
+                    }
+                    if(this.isEntre == false){
+                       data = {
+                            createdAtSortie : this.createdAtSortie, // on ne va pas l'utiliser on utilisera l'heure généré par le serveur
+                            typeSortie : this.typeSortie,
+                            clientSortie : this.clientSortie,
+                            litrageSortie : this.litrageSortie.replaceAll(' ', '').replaceAll('-', ''),
+                            montantSortie : this.montantSortie.replaceAll(' ', '').replaceAll('-', ''),
+                            stationSortie : this.stationSortie,
+                            immatriculationSortie : this.vehiculeSortie,
+                            kilometrageSortie: this.kilometrageSortie.replaceAll(' ', ''),
+                            chauffeurSortie : this.chauffeurSortie,
+                            fondReservoirSortie : this.fondReservoirSortie.replaceAll(' ', ''),
+                            trajetSortie : this.trajetSortie,
+                            typeAction : 'sortie',
+                            id : this.carbId
+                        }
+                    }
+                    axios.interceptors.request.use((config) => {
+						$("#valider-sortie").text("PATIENTER ...");
+                        $("#valider-sortie").prop('disabled',true);
+						return config;
+					}, (error) => {
+						return Promise.reject(error);
+					});
+
+					axios.interceptors.response.use((response) => {
+						$("#valider-sortie").text("VALIDER");
+                        $("#valider-sortie").prop('disabled',false);
+						return response;
+					}, (error) => {
+						
+						return Promise.reject(error);
+					});
+					//console.log(data);
+					axios.post('{{ path("valider_carburant") }}', data)
+					.then((response) => {
+						if(response.data.code == 0 && response.data.value == "success"){
+                            this.errorLitrage = false;
+                            this.refreshstock();
+                            this.refreshTable();
+                            this.resetAllform();
+                            this.closeCarbModal();
+                        }
+                        else{
+                            this.errorLitrage = true;
+                        }
+					}, (error) => {
+						console.error("Erreur valider sortie");
+					});
+                },
+                deleteCarb(carbId){
+                    var confirmation = confirm("Voulez-vous vraiment supprimer cette ligne ?");
+                    if(confirmation){
+                        axios.post('/profile/carburant/delete/' + carbId)
+                        .then((response) => {
+                            if(response.data.code == 0 && response.data.value == "success"){
+                                this.refreshstock();
+                                this.refreshTable();
+                            }else{
+                                alert("Peut être que cette ligne n'existe plus");
+                            }
+                        }, (error) => {
+                            console.error("Erreur valider sortie");
+                        });
+                    }
+                },
+                allSetToFalse(){
+                    this.isVoyage = false;
+                    this.isCarburant = false;
+                    this.isPneus = false;
+                    this.isEntretien = false
+                },
+                chooseVoyage(){
+                    this.allSetToFalse();
+                    this.isVoyage = true;
+                },
+                chooseCarburant(){
+                    this.allSetToFalse();
+                    this.isCarburant = true;
+                },
+                choosePneus(){
+                    this.allSetToFalse();
+                    this.isPneus = true;
+                },
+                chooseEntretien(){
+                    this.allSetToFalse();
+                    this.isEntretien = true;
+                },
+                loadVehicule(id){
+                    let self = this; //<---added
+                    var data = {
+                        'vehicule_id' : id
+                    }
+                    $.ajax({
+                        url : "/profile/load_vehicule_id",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+
+                            var imagePath = "{{ asset('uploads/vehicules/')}}";
+                            $('#immatriculation-modal').text(data[0].immatriculation)
+                            $('#marque-modal').text(data[0].vehicule_marque)
+                            $('#centre-modal').text(data[0].vehicule_centre)
+                            data[0].vehicule_image ? $("#image-modal").attr('src', imagePath + data[0].vehicule_image) : $("#image-modal").attr('src','');
+                        },
+                        complete : function(data){
+                            $('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                    $.ajax({
+                        url : "/profile/load_vehicule",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+
+                            //voyage
+                            var htmlVoyage = '';
+                            var totalVoyage = 0;
+                            data.ficheVoyage.forEach((item, index) => {
+                                totalVoyage += parseInt(item.voyage_montant);
+                                htmlVoyage += `
+                                    <tr>
+                                        <td class="chauffeur">${ item.chauffeur_voyage ? item.chauffeur_voyage : '' }</td>
+                                        <td class="client">${ item.client_voyage ? item.client_voyage : '' }</td>
+                                        <td class="ot">${ item.voyage_ot ? item.voyage_ot : '' }</td>
+                                        <td class="date">${ item.voyage_dd ? self.splitDate(item.voyage_dd.date)  : '' }</td>
+                                        <td class="date">${ item.voyage_df ? self.splitDate(item.voyage_df.date) : '' }</td>
+                                        <td class="trajet">${ item.voyage_trajet ? item.voyage_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.voyage_montant ? self.formatCurency(item.voyage_montant) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_voyage").text(self.formatCurency(totalVoyage))
+                            $("#body-voyage").html(htmlVoyage);
+
+                            //carburant
+                            var htmlCarburant = '';
+                            var totalCarburant = 0;
+                            data.ficheCarburant.forEach((item, index) => {
+                                totalCarburant += parseInt(item.carb_montant);
+                                htmlCarburant += `
+                                    <tr>
+                                        <td class="date">${ item.date_carb ? self.splitDate(item.date_carb.date) : '' }</td>
+                                        <td class="station">${ item.carb_station ? item.carb_station  : '' }</td>
+                                        <td class="kilometrage">${ item.carb_kilometrage ? self.formatKilometrage(item.carb_kilometrage) : '' }</td>
+                                        <td class="chauffeur">${ item.carb_sortie_chauffeur ? item.carb_sortie_chauffeur : '' }</td>
+                                        <td class="client">${ item.carb_client ? item.carb_client : '' }</td>
+                                        <td class="type">${ item.carb_type ? item.carb_type : '' }</td>
+                                        <td class="litrage">${ item.carb_litrage ? self.formatLitrage(item.carb_litrage) : '' }</td>
+                                        <td class="fond">${ item.carb_fond ? self.formatLitrage(item.carb_fond) : '' }</td>
+                                        <td class="fond">${ item.conso ? item.conso : '' }</td>
+                                        <td class="trajet">${ item.carb_trajet ? item.carb_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.carb_montant ? self.formatCurency(item.carb_montant) : ''}</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_carburant").text(self.formatCurency(totalCarburant))
+                            $("#body-carburant").html(htmlCarburant);
+
+                            //pneu
+                            var htmlPneu = '';
+                            var totalPneu = 0;
+                            if(data.fichePneu.length > 0){
+                                data.fichePneu.forEach((item, index) => {
+                                    totalPneu += item.pneu_montant != null ? parseInt(item.pneu_montant.replaceAll(' ', '')) : 0;
+                                    htmlPneu += `
+                                        <tr>
+                                            <td class="date">${ item.date_pneu ? self.splitDate(item.date_pneu.date) : '' }</td>
+                                            <td class="kilometrage">${ item.pneu_kilometrage ? self.formatKilometrage(item.pneu_kilometrage) : '' }</td>
+                                            <td class="num_serie">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="marque">${ item.pneu_marque ? item.pneu_marque : '' }</td>
+                                            <td class="ref">${ item.pneu_position ? item.pneu_position : '' }</td>
+                                            <td class="position">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="montant-sold">${ item.pneu_montant ? self.formatCurency(item.pneu_montant.replaceAll(' ', '')) : '' }</td>
+                                        </tr>
+                                    `;
+                                })
+                            }
+                            $("#total_montant_pneu").text(self.formatCurency(totalPneu))
+                            $("#body-pneu").html(htmlPneu);
+
+
+                            var htmlInt = '';
+                            var totalInt = 0;
+                            data.fichePiece.forEach((item, index) => {
+                                totalInt += parseInt(item.int_total);
+                                htmlInt += `
+                                    <tr>
+                                        <td class="date">${ item.int_date_fin ? self.splitDate(item.int_date_fin.date) : '' }</td>
+                                        <td class="date">${ item.int_date_debut ? self.splitDate(item.int_date_debut.date) : '' }</td>
+                                        <td class="km">${ item.int_km ? item.int_km : '' }</td>
+                                        <td class="ot">${ item.int_ot ? item.int_ot : '' }</td>
+                                        <td class="motif">${ item.int_motif ? item.int_motif : '' }</td>
+                                        <td class="pieces">
+                                            <span data-intervention="`+ item.intervention_id +`" class="npiece" style="${ item.nbr_piece_intervention ? 'display : block;' : 'display:none;' }">
+                                                ${ item.nbr_piece_intervention ? item.nbr_piece_intervention : 0 } pièces<i class="fa fa-detail"></i>
+                                            </span>
+                                        </td>
+                                        <td class="intervenant">${ item.intervenant ? item.intervenant : '' }</td>
+                                        <td class="commentaire">${ item.int_conmmentaire ? item.int_conmmentaire: '' }</td>
+                                        <td class="montant-sold">${ item.int_total ? self.formatCurency(item.int_total) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_intervenation").text(self.formatCurency(totalInt))
+                            $("#body-entretien").html(htmlInt);
+                        },
+                        complete : function(data){
+                            //$('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                },
+                loadChauffeur(id){
+                    let self = this; //<---added
+                    $('#image-modal-chauffeur').attr("src","/images/icones_trans/avatar.png");
+                    $('#visite-modal').html('');
+                    $.ajax({
+                        url: "/profile/transport/detail/chauffeur",
+                        type: "POST",
+                        data: {
+                            'id' : id
+                        },
+                        success: function (data, status) {
+                            $('#nom-modal').text(data.nom);
+                            $('#appelation-modal').text(data.appellation);
+                            $('#matricule-modal').text(data.matricule);
+                            $('#embauche-modal').text(data.embauche);
+                            $('#permis-modal').text(data.permis);
+                            $('#cin-modal').text(data.cin);
+                            $('#age-modal').text(data.age);
+                            $('#visite-modal').append(data.visite);
+                            $('#anciennete-modal').text(data.anciennete);
+                            if(data.image) $('#image-modal-chauffeur').attr("src","/uploads/chauffeurs/"+data.image);
+                            $('#modal-fiche-chauffeur').modal('show');
+                        },
+                    });
+                    var data = {
+                        'chauffeur_id' : id
+                    }
+
+                    $.ajax({
+                        url : "/profile/load_chauffeur",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+
+                            //voyage
+                            var htmlVoyage = '';
+                            var totalVoyage = 0;
+                            data.ficheVoyage.forEach((item, index) => {
+                                totalVoyage += parseInt(item.voyage_montant);
+                                htmlVoyage += `
+                                    <tr>
+                                        <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                        <td class="client">${ item.client_voyage ? item.client_voyage : '' }</td>
+                                        <td class="ot">${ item.voyage_ot ? item.voyage_ot : '' }</td>
+                                        <td class="date">${ item.voyage_dd ? self.splitDate(item.voyage_dd.date)  : '' }</td>
+                                        <td class="date">${ item.voyage_df ? self.splitDate(item.voyage_df.date) : '' }</td>
+                                        <td class="trajet">${ item.voyage_trajet ? item.voyage_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.voyage_montant ? self.formatCurency(item.voyage_montant) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_voyage_chauffeur").text(self.formatCurency(totalVoyage))
+                            $("#body-voyage-chauffeur").html(htmlVoyage);
+
+                            //carburant
+                            var htmlCarburant = '';
+                            var totalCarburant = 0;
+                            data.ficheCarburant.forEach((item, index) => {
+                                totalCarburant += parseInt(item.carb_montant);
+                                htmlCarburant += `
+                                    <tr>
+                                        <td class="date">${ item.date_carb ? self.splitDate(item.date_carb.date) : '' }</td>
+                                        <td class="station">${ item.carb_station ? item.carb_station  : '' }</td>
+                                        <td class="kilometrage">${ item.carb_kilometrage ? self.formatKilometrage(item.carb_kilometrage) : '' }</td>
+                                        <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                        <td class="client">${ item.carb_client ? item.carb_client : '' }</td>
+                                        <td class="type">${ item.carb_type ? item.carb_type : '' }</td>
+                                        <td class="litrage">${ item.carb_litrage ? self.formatLitrage(item.carb_litrage) : '' }</td>
+                                        <td class="fond">${ item.carb_fond ? self.formatLitrage(item.carb_fond) : '' }</td>
+                                        <td class="trajet">${ item.carb_trajet ? item.carb_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.carb_montant ? self.formatCurency(item.carb_montant) : ''}</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_carburant_chauffeur").text(self.formatCurency(totalCarburant));
+                            $("#body-carburant-chauffeur").html(htmlCarburant);
+
+                            //pneu
+                            var htmlPneu = '';
+                            var totalPneu = 0;
+                            if(data.fichePneu.length > 0){
+                                data.fichePneu.forEach((item, index) => {
+                                    totalPneu += item.pneu_montant != null ? parseInt(item.pneu_montant.replaceAll(' ', '')) : 0;
+                                    htmlPneu += `
+                                        <tr>
+                                            <td class="date">${ item.date_pneu ? self.splitDate(item.date_pneu.date) : '' }</td>
+                                            <td class="kilometrage">${ item.pneu_kilometrage ? self.formatKilometrage(item.pneu_kilometrage) : '' }</td>
+                                            <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                            <td class="num_serie">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="marque">${ item.pneu_marque ? item.pneu_marque : '' }</td>
+                                            <td class="ref">${ item.pneu_position ? item.pneu_position : '' }</td>
+                                            <td class="position">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="montant-sold">${ item.pneu_montant ? self.formatCurency(item.pneu_montant.replaceAll(' ', '')) : '' }</td>
+                                        </tr>
+                                    `;
+                                })
+                            }
+                            $("#total_montant_pneu_chauffeur").text(self.formatCurency(totalPneu))
+                            $("#body-pneu-chauffeur").html(htmlPneu);
+
+
+                            var htmlInt = '';
+                            var totalInt = 0;
+                            data.fichePiece.forEach((item, index) => {
+                                totalInt += parseInt(item.int_total);
+                                htmlInt += `
+                                    <tr>
+                                        <td class="date">${ item.int_date_fin ? self.splitDate(item.int_date_fin.date) : '' }</td>
+                                        <td class="date">${ item.int_date_debut ? self.splitDate(item.int_date_debut.date) : '' }</td>
+                                        <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                        <td class="km">${ item.int_km ? item.int_km : '' }</td>
+                                        <td class="ot">${ item.int_ot ? item.int_ot : '' }</td>
+                                        <td class="motif">${ item.int_motif ? item.int_motif : '' }</td>
+                                        <td class="pieces">
+                                            <span data-intervention="`+ item.intervention_id +`" class="npiece" style="${ item.nbr_piece_intervention ? 'display : block;' : 'display:none;' }">
+                                                ${ item.nbr_piece_intervention ? item.nbr_piece_intervention : 0 } pièces<i class="fa fa-detail"></i>
+                                            </span>
+                                        </td>
+                                        <td class="intervenant">${ item.intervenant ? item.intervenant : '' }</td>
+                                        <td class="commentaire">${ item.int_conmmentaire ? item.int_conmmentaire: '' }</td>
+                                        <td class="montant-sold">${ item.int_total ? self.formatCurency(item.int_total) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_intervenation_chauffeur").text(self.formatCurency(totalInt))
+                            $("#body-entretien-chauffeur").html(htmlInt);
+                        },
+                        complete : function(data){
+                            //$('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                },
+                splitDate(date){
+                    var dateS = date.split('.');
+                    return dateS[0];
+                },
+                formatCurency(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " Ar" ;
+                    }else{
+                        return 0;
+                    }
+
+                },
+                formatLitrage(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " L" ;
+                    }else{
+                        return 0;
+                    }
+
+                },
+                formatKilometrage(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " KM" ;
+                    }else{
+                        return 0;
+                    }
+                    
+                },
+            }
+        })
+    </script>
+    <script>
+        $(document).ready(function(){
+        
+            $(document).on('click', '.edit_carb', function(ev){
+                ev.preventDefault()
+                //console.log(app)
+                var nature = $(this).attr('data-nature');
+                var carbId = $(this).attr('data-id');
+                var stringDateSortie = $(this).parent().siblings('.date').text();
+                var dmy = stringDateSortie.split(' ')[0];
+                var hm = stringDateSortie.split(' ')[1];
+                var tabdmy = dmy.split('-');
+                var ymd = tabdmy[2] + '-' + tabdmy[1] + '-' + tabdmy[0];
+                var dateSortie = ymd + 'T' + hm;
+                //console.log(dateSortie);
+                var dataLigne = {
+                    carbId : carbId,
+                    date : dateSortie,
+                    station : $(this).parent().siblings('.station').text(),
+                    vehicule : $(this).parent().siblings('.vehicule').text(),
+                    kilometrage : $(this).parent().siblings('.kilometrage').text().replaceAll(' ', ''),
+                    chauffeur : $(this).parent().siblings('.chauffeur').text(),
+                    type : $(this).parent().siblings('.type').text(),
+                    litrage : $(this).parent().siblings('.litrage').text().replaceAll(' ', ''),
+                    fond : $(this).parent().siblings('.fond').text().replaceAll(' ', ''),
+                    trajet : $(this).parent().siblings('.trajet').text(),
+                    montant : $(this).parent().siblings('.montant').text().replaceAll(' ', ''),
+                    client : $(this).parent().siblings('.client').text(),
+                }
+                app.carbId = carbId;
+                if(nature == "entre"){
+                    app.isEntre = true;
+                    app.isSortie = false;
+                    app.typeEntre = dataLigne.type;
+                    app.createdAtEntre = dataLigne.date;
+                    $('#type-entre').val(app.typeEntre);
+                    $('#type-entre').trigger('change');
+                    $('.selectpicker').selectpicker('refresh');
+                    $('#createdAt-entre').val(app.createdAtEntre);
+                    app.litrageEntre = dataLigne.litrage;
+                    app.montantEntre = dataLigne.montant;
+                    // open modal entre 
+                    app.isEntry = true;
+                    app.isModalCreate = false
+                    app.$options.methods.openCarbModalForEdit('entre');
+                }else if(nature == "sortie"){
+                    app.isEntre = false;
+                    app.isSortie = true;
+                    //console.log(dataLigne.date)
+                    app.createdAtSortie = dataLigne.date;
+                    app.typeSortie = dataLigne.type;
+                    
+                    $('#createdAt-sortie').val(app.createdAtSortie);
+                    $('#type-sortie').val(app.typeSortie);
+                    $('#type-sortie').trigger('change');
+                    app.clientSortie = dataLigne.client;
+                    $('#client-sortie').val(app.clientSortie);
+                    $('#client-sortie').trigger('change');
+                    app.litrageSortie = dataLigne.litrage;
+                    app.montantSortie = dataLigne.montant;
+                    app.stationSortie = dataLigne.station;
+                    $('#station-sortie').val(app.stationSortie);
+                    $('#station-sortie').trigger('change');
+                    app.vehiculeSortie = dataLigne.vehicule.trim();
+                    //console.log(app.vehiculeSortie.trim())
+                    $('#vehicule').val(app.vehiculeSortie);
+                    $('#vehicule').trigger('change');
+                    app.kilometrageSortie = dataLigne.kilometrage;
+                    app.chauffeurSortie = dataLigne.chauffeur
+                    app.chauffeurSortie = app.chauffeurSortie.split('-')[1];
+                    $('#chauffeur-sortie').val(app.chauffeurSortie);
+                    $('#chauffeur-sortie').trigger('change');
+                    $('.selectpicker').selectpicker('refresh');
+                    
+                    app.fondReservoirSortie = dataLigne.fond;
+                    app.trajetSortie = dataLigne.trajet;
+                    $('#trajet-sortie').val(app.trajetSortie);
+                    $('#trajet-sortie').trigger('change');
+                    app.isEntry = false;
+                    app.isModalCreate = false
+                    app.$options.methods.openCarbModalForEdit('sortie');
+                }
+            })
+            $(document).on('click', '.delete_carb', function(ev){
+                ev.preventDefault();
+                var carbId = $(this).attr('data-id');
+                app.$options.methods.deleteCarb(carbId);
+            })
+        })
+    </script>
+{% endblock %}

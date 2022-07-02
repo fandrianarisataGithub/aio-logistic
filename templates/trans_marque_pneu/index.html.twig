@@ -1,0 +1,37 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}TransMarquePneu index{% endblock %}
+
+{% block body %}
+    <h1>Liste Marque pneu</h1>
+    <a href="{{ path('trans_marque_pneu_new') }}" class="btn-primary btn-sm">Ajouter</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom</th>
+                <th>Rang</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for trans_marque_pneu in trans_marque_pneus %}
+            <tr>
+                <td>{{ trans_marque_pneu.id }}</td>
+                <td>{{ trans_marque_pneu.nom }}</td>
+                <td>{{ trans_marque_pneu.rang }}</td>
+                <td>
+                    <a href="{{ path('trans_marque_pneu_show', {'id': trans_marque_pneu.id}) }}" class="btn btn-info btn-xs">Ouvrir</a>
+                    <a href="{{ path('trans_marque_pneu_edit', {'id': trans_marque_pneu.id}) }}" class="btn btn-xs btn-success">Modifier</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    
+{% endblock %}

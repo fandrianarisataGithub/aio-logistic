@@ -1,0 +1,12 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Nouveau code designaiton{% endblock %}
+
+{% block body %}
+    <h1>Ajouter un nouveau code et désignation</h1>
+
+    {{ include('trans_code_designation_piece/_form.html.twig') }}
+
+    <a href="{{ path('trans_code_designation_piece_index') }}" class="btn btn-primary btn-xs my-4">Revenir à la liste</a>
+{% endblock %}
+

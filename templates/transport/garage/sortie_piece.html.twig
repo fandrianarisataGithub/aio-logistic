@@ -1,0 +1,2367 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Sorties Pièces{% endblock %}
+
+{% block body %}
+    <div id="app">
+        <div class="list-action-garage">
+            <ul>
+                <li>
+                    <a
+                        {% if (currentPath=="/profile/garage/stock")  %}
+                            class="a-hovered"
+                        {% endif %}
+                        href="{{ path('transport_garage_stock_piece') }}"
+                    >Etat</a>
+                </li>
+                <li>
+                    <a
+                        {% if (currentPath=="/profile/garage/entree") %}
+                            class="a-hovered"
+                        {% endif %}
+                        href="{{ path('transport_garage_entree_piece') }}"
+                    >Entrées</a>
+                </li>
+                <li>
+                <a
+                        {% if (currentPath=="/profile/garage/sortie") %}
+                            class="a-hovered"
+                        {% endif %} 
+                        href="{{ path('transport_garage_sortie_piece') }}"
+                    >Sorties</a>
+                </li>
+            </ul>
+        </div>
+        <div class="title-page-trans">
+            <h1 class="fs-primary">Sorties Pièces</h1>
+        </div>
+        <div class="array">
+            <div class="array-head">
+                <div class="part d-flex">
+                    <div class="input-content input-search-trans-array">
+                        <span class="fa fa-search"></span><input id="mySearchText" type="text" placeholder="Recherche">
+                    </div>
+                    <div class="designation-filter">
+                        <div class="form-group no-sb d-flex justify-content-start align-items-center">
+                            <label class="label-modal label-95 label-95-des-filter-piece " for="">Pièces:</label>
+                            <select
+                                    class="selectpicker"
+                                    data-show-subtext="true"
+                                    data-live-search="true"
+                                    name="piece_id"
+                                    id="piece_id"
+                                    data-size="5"
+                                    required
+                            >
+
+                                <option value="">---CHOISISSEZ---</option>
+                                {% for piece in pieces %}
+                                    <option value="{{ piece['id'] }}">{{ piece['designation'] }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="fond-lightOrange btn-reset">Reset</button>
+                            <button class="btn btn-filter">Filtrer</button>
+                        </div>
+                    </div>
+                    <div class="input-date-filter">
+                    <span class="icone_calenadr">
+                        <img src="{{ asset('images/icones_trans/calendar.svg') }}" alt="calendar">
+                    </span>
+                        <input type="date" id="date1">
+                        <span>-</span>
+                        <input type="date" id="date2">
+                    </div>
+                </div>
+                <div class="part d-flex">
+                    <div class="maj-export">
+                        <a href="#" id="maj"
+                                {% if app.user.transportGarage == '1' %}
+                                    class="fond-lightOrange btn-maj"
+                                {% else %}
+                                    class="fond-lightOrange btn-maj d-none"
+                                {% endif %}
+                        >
+                            <ion-icon name="add-outline"></ion-icon>
+                            <span>Inserer</span>
+                        </a>
+                        <a href="#" id="export" class="fond-lightGreen btn-maj">
+                            <span><img src="{{ asset('images/icones_trans/export.svg') }}" alt="export"></span>
+                            <span>Export Excel</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="trans_tableau">
+                <table id="tableau-sortie-piece" class="table" style="width:100%" >
+                    <thead>
+                    <tr>
+                        <th class="date">DATE <br>DEBUT</th>
+                        <th class="date">DATE FIN</th>
+                        <th class="vehicule">VEHICULE</th>
+                        <th class="km">KM</th>
+                        <th class="chauffeur">CHAUFFEUR</th>
+                        <th class="client">CLIENT</th>
+                        <th class="ot">OT</th>
+                        <th class="motif">MOTIF</th>
+                        <th class="piece">PIECE</th>
+                        <th class="intervenants">INTERVENANTS</th>
+                        <th class="commentaire">COMMENTAIRES</th>
+                        <th class="cout">COUT TOTAL <br> INTERVENTION (TTC)</th>
+                        <th class="action"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="10">
+                        </td>
+                        <td colspan="1">
+                            TOTAL TTC :
+                        </td>
+                        <td colspan="1" style="text-align:start;">
+                            <span class="montant">0</span> <span class="unite_ar">Ar</span>
+                        </td>
+                        <td></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        {# modal detail pièce #}
+        <div class="modal fade" id="modal-detail-piece" tabindex="-1" role="dialog" aria-labelledby="modalentree" aria-hidden="true">
+            <div class="modal-dialog mb-50" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title secondary-title">DETAILS PIECES</h2>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body modal-body-sortie no-mt">
+                        <table id="tableau-detail-piece" class="table table_in_modal" style="width:100%" >
+                            <thead>
+                            <tr>
+                                <th class="piece">PIECES</th>
+                                <th class="code">CODES</th>
+                                <th class="quantity">Qté</th>
+                                <th class="price">PRIX UNITAIRES(HT)</th>
+                                <th class="price">PRIX TOTAL (TTC)</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td class="price modal-td-foot text-end" colspan="1">TOTAL TTC : </td>
+                                <td class="price  modal-td-foot"><span class="motant">0</span><span class="unite_ar"></span></td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {# /modal detail pièce #}
+        <div class="modal fade" id="modal-sortie-piece" tabindex="-1" role="dialog" aria-labelledby="modalentree" aria-hidden="true">
+            <div class="modal-dialog mb-50" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title secondary-title">MISE A JOUR SORTIES PIECES/INTERVENTIONS</h2>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body modal-body-sortie no-mt">
+                        <form action="" class="form-new-intervention">
+                            <div class="d-flex justify-content-between form-modal m-19">
+                                <div class="form-part">
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">DATE DEBUT</label>
+                                        <input type="datetime-local" class="input-modal" name="date_debut" required>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">DATE FIN</label>
+                                        <input type="datetime-local" class="input-modal" name="date_fin" required>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">VEHICULE</label>
+                                        <select
+                                                class="selectpicker"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                name="vehicule"
+                                                id="select-vehicule"
+                                                data-size="5"
+                                                required
+                                        >
+                                            <option value="">---CHOISISSEZ---</option>
+                                            {% for vehicule in vehicules %}
+                                                <option value="{{ vehicule['id'] }}">{{ vehicule['immatriculation'] }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">KILOMETRAGE</label>
+                                        <input type="text" placeholder="121121" class="input-modal kilometrage-input" name="km" required>
+                                    </div>
+                                </div>
+                                <div class="form-part flex-start">
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">CHAUFFEUR</label>
+                                        <select
+                                                class="selectpicker"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                name="chauffeur"
+                                                data-size="5"
+                                                required
+                                        >
+                                            <option value="">---CHOISISSEZ---</option>
+                                            {% for chauffeur in chauffeurs %}
+                                                <option value="{{ chauffeur['id'] }}">{{ chauffeur['nom'] }} - {{ chauffeur['matricule'] }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">CLIENT</label>
+                                        <select
+                                                class="selectpicker"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                name="client"
+                                                data-size="5"
+                                                required
+                                        >
+                                            <option value="">---CHOISISSEZ---</option>
+                                            {% for client in allClient %}
+                                                <option value="{{ client['nom'] }}">{{client['nom']}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">OT</label>
+                                        <input type="text" placeholder="2265" class="input-modal" name="ot" required>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">MOTIF</label>
+                                        <input type="text" placeholder="E-10.000K" class="input-modal" name="motif" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-for="(input, index) in arrayInput" class="form-detail-piece d-flex justify-content-between m-19 p-19">
+                                <section class="des-code d-flex flex-column justify-content-between">
+                                    <div class="form-group">
+                                        <select
+                                                class="selectpicker select-piece-by-code"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                :name="'piece['+index+'][code]'"
+                                                data-size="5"
+                                                required
+                                        >
+                                            <option value="" selected disabled>CODE ARTICLE</option>
+                                            <option v-for="(option,i) in optionSelect"
+                                                    :value="option.id"
+                                                    :data-prix="option.prix"
+                                                    :data-qte="option.qte"
+                                                    :data-designation="option.designation"
+                                                    :data-index="index"
+
+                                            >
+                                                ${ option.code }
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <select
+                                                class="selectpicker select-piece-by-des"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                :name="'piece['+index+'][id]'"
+                                                data-size="5"
+                                                required
+                                        >
+                                            <option value="" selected disabled>DESIGNATION</option>
+                                            <option v-for="(option,i) in optionSelect"
+                                                    :value="option.id"
+                                                    :data-prix="option.prix"
+                                                    :data-qte="option.qte"
+                                                    :data-code="option.code"
+                                                    :data-index="index"
+
+                                            >
+                                                ${ option.designation }
+                                            </option>
+                                        </select>
+                                    </div>
+                                </section>
+                                <section class="qte_pu d-flex flex-column justify-content-between">
+                                    <div class="form-group">
+                                        <label class="label-modal" for="">QTÉ:</label>
+                                        <input type="number" v-model="input.qteValue" :name="'piece['+index+'][qte]'" :id="'qte-'+index" :data-index="index" class="input-modal-number qte-piece" min="0" step="0.01" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="label-modal" for="">PRIX UNITAIRES(HT):</label>
+                                        <input type="text" {#v-model="input.priceValue"#} :name="'piece['+index+'][prix]'" :id="'total-'+index" class="input-modal total-prix" readonly>
+                                    </div>
+                                </section>
+                                <div class="action">
+                                    <button @click.prevent="deleteInput(index)" class="button-transparent" :disabled= "input.delet == false"><span v-if="input.delet" class="fa fa-trash-o"></span></button>
+                                </div>
+                            </div>
+                            <div class="add_liste_piece m-19 p-19">
+                                <a @click.prevent="incrementInputLength" href="#" new="" class="button-add-liste-piece">
+                                    <span class="fa fa-plus"></span>
+                                    <span>AJOUTER</span>
+                                </a>
+                            </div>
+                            <div class="form-interv-comm m-19 p-19">
+                                <div class="d-flex flex-column">
+                                    {# si il y a un entité intervenant #}
+                                    {#<div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">INTERVENANTS</label>
+                                        <input v-model="valueIntervenant" type="hidden" name="intervenant" required>
+                                        <input @keyup.13="addIntervenant(uniteInterevenant)" v-model="uniteInterevenant" type="text" placeholder="Clint/Njara" class="input-modal">
+                                        <span @click="addIntervenant(uniteInterevenant)" class="fa add-intervenant fa-plus"></span>
+                                    </div>
+                                    <div class="listIntervenant-container">
+                                        <div v-for="(nom, index) in arrayIntervenant" :key="index" class="inet-item">
+                                            <span class="nom">${nom}</span>
+                                            <a href="#" @click.prevent="deleteItemIntervenant(index)" class="btn-remove-item-int">
+                                                <span class="fa fa-times"></span>
+                                            </a>
+                                        </div>
+                                    </div>#}
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">INTERVENANTS</label>
+                                        <input type="text" placeholder="Clint/Njara" class="input-modal" name="intervenant" required>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">LIEU D'INTERVENTION</label>
+                                        <select
+                                                id="lieu-intervention"
+                                                class="selectpicker lieu-intervention"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                name="lieuIntervention"
+                                                required
+                                        >
+                                            <option value="" selected disabled>LIEU D'INTERVETION</option>
+                                            <option value="BASE TANA">BASE TANA</option>
+                                            <option value="BASE TAMATAVE">BASE TAMATAVE</option>
+                                            <option value="SUR ROUTE">SUR ROUTE</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group no-sb d-flex align-items-start">
+                                        <label class="label-modal label-95" for="">COMMENTAIRES</label>
+                                        <textarea placeholder="Entretien 10 000 KM" id="comment" name="commentaire" cols="30" rows="10"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-interv-comm m-19 p-19">
+                                <div class="d-flex flex-column">
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">COUT TOTAL <br>INTERVENTION <br>(TTC)</label>
+                                        <input type="text" id="total-prices" placeholder="0" class="input-modal" readonly>
+                                        <input type="hidden" id="total-prices-hidden" name="total_intervention">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-interv-valider m-19 p-19">
+                                <button type="submit" href="#" id="new-intervention" class="fond-lightGreen btn-maj float-right">
+                                    <span class="mx-0">VALIDER</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# /edit modal detail pièce #}
+        <div class="modal fade" id="modal-sortie-piece-edit" tabindex="-1" role="dialog" aria-labelledby="modalentree" aria-hidden="true">
+            <div class="modal-dialog mb-50" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title secondary-title">MISE A JOUR SORTIES PIECES/INTERVENTIONS</h2>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body modal-body-sortie no-mt">
+                        <form action="" class="form-new-intervention-edit">
+                            <div class="d-flex justify-content-between form-modal m-19">
+                                <div class="form-part">
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">DATE DEBUT</label>
+                                        <input type="datetime-local" class="input-modal" name="date_debut" required>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">DATE FIN</label>
+                                        <input type="datetime-local" class="input-modal" name="date_fin" required>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">VEHICULE</label>
+                                        <select
+                                                class="selectpicker"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                name="vehicule"
+                                                id="select-vehicule-edit"
+                                                required
+                                        >
+                                            <option value="">---CHOISISSEZ---</option>
+                                            {% for vehicule in vehicules %}
+                                                <option value="{{ vehicule['id'] }}">{{ vehicule['immatriculation'] }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">KILOMETRAGE</label>
+                                        <input type="text" placeholder="121121" class="input-modal kilometrage-input" name="km" required>
+                                    </div>
+                                </div>
+                                <div class="form-part flex-start">
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">CHAUFFEUR</label>
+                                        <select
+                                                class="selectpicker"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                name="chauffeur"
+                                                id="select-chauffeur"
+                                                data-size="5"
+                                                required
+                                        >
+                                            <option value="">---CHOISISSEZ---</option>
+                                            {% for chauffeur in chauffeurs %}
+                                                <option value="{{ chauffeur['id'] }}">{{ chauffeur['nom'] }} - {{ chauffeur['matricule'] }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">CLIENT</label>
+                                        <select
+                                                class="selectpicker"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                name="client"
+                                                id="select-client"
+                                                data-size="5"
+                                                required
+                                        >
+                                            <option value="">---CHOISISSEZ---</option>
+                                            {% for client in allClient %}
+                                                <option value="{{ client['nom'] }}">{{client['nom']}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">OT</label>
+                                        <input type="text" placeholder="2265" class="input-modal" name="ot" required>
+                                    </div>
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">MOTIF</label>
+                                        <input type="text" placeholder="E-10.000K" class="input-modal" name="motif" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-for="(input, index) in arrayInputEdit" class="form-detail-piece d-flex justify-content-between m-19 p-19">
+                                <div class="w-100 d-flex justify-content-between align-items-center">
+                                    <section>
+                                        <div class="form-group">
+                                            <input type="text" v-model="input.code" class="input-modal" readonly>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" v-model="input.designation" class="input-modal" readonly>
+                                            <input type="hidden" v-model="input.id" :name="'piece['+index+'][id]'">
+                                            <input type="hidden" v-model="input.detail_id" :name="'piece['+index+'][detail_id]'">
+                                        </div>
+                                    </section>
+                                    <section>
+                                        <div class="form-group">
+                                            <label class="label-modal" for="">QTÉ:</label>
+                                            <input type="number" v-model="input.qte" :name="'piece['+index+'][qte]'" :id="'qte-edit-'+index" :data-index="index" :data-prix="input.prix" class="input-modal-number qte-piece-edit" min="0" step="0.01" :max="input.max">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="label-modal" for="">PRIX UNITAIRES(HT):</label>
+                                            <input type="text" :name="'piece['+index+'][prix]'" :id="'total-edit-'+index" :data-prix="input.prix" class="input-modal total-prix-edit" readonly>
+                                        </div>
+                                    </section>
+                                </div>
+                                <div class="action" :set="test = index">
+                                    <button @click.prevent="deleteInputEdit(index)" class="button-transparent" disabled><span v-if="input.delet" class="fa fa-trash-o"></span></button>
+                                </div>
+                            </div>
+                            <div v-for="(input, index) in arrayInputEditNew" class="form-detail-piece d-flex justify-content-between m-19 p-19">
+                                <section class="des-code d-flex flex-column justify-content-between">
+                                    <div class="form-group">
+                                        <select
+                                                class="selectpicker select-piece-by-code-edit"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                :name="'piece['+(index+test+1)+'][id]'"
+                                                data-size="5"
+                                                required
+                                        >
+                                            <option value="" selected disabled>CODE ARTICLE</option>
+                                            <option v-for="(option,i) in optionSelect"
+                                                    :value="option.id"
+                                                    :data-prix="option.prix"
+                                                    :data-qte="option.qte"
+                                                    :data-designation="option.designation"
+                                                    :data-index="(index+test+1)"
+
+                                            >
+                                                ${ option.code }
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <select
+                                                class="selectpicker select-piece-edit"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                data-size="5"
+                                                required
+                                        >
+                                            <option value="" selected disabled>DESIGNATION</option>
+                                            <option
+                                                    v-for="(option,i) in optionSelect"
+                                                    :value="option.id"
+                                                    :data-prix="option.prix"
+                                                    :data-qte="option.qte"
+                                                    :data-index="(index+test+1)"
+                                            >
+                                                ${ option.designation }
+                                            </option>
+                                        </select>
+                                    </div>
+                                </section>
+                                <section class="des-code d-flex flex-column justify-content-between">
+                                    <div class="form-group">
+                                        <label class="label-modal" for="">QTÉ:</label>
+                                        <input type="number" v-model="input.qteValue" :name="'piece['+(index+test+1)+'][qte]'" :id="'qte-'+(index+test+1)" :data-index="(index+test+1)" class="input-modal-number qte-piece-edit" min="0" step="0.01" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="label-modal" for="">PRIX UNITAIRES(HT):</label>
+                                        <input type="text" {#v-model="input.priceValue"#} :name="'piece['+(index+test+1)+'][prix]'" :id="'total-edit-'+(index+test+1)" class="input-modal total-prix-edit" readonly>
+                                    </div>
+                                </section>
+                                <div class="action">
+                                    <button @click.prevent="deleteInputEdit(index)" class="button-transparent"><span v-if="input.delet" class="fa fa-trash-o"></span></button>
+                                </div>
+                            </div>
+                            <div class="add_liste_piece m-19 p-19">
+                                <a @click.prevent="incrementInputLengthEdit" href="#" edit="" class="button-add-liste-piece">
+                                    <span class="fa fa-plus"></span>
+                                    <span>AJOUTER</span>
+                                </a>
+                            </div>
+                            <div class="form-interv-comm m-19 p-19">
+                                <div class="d-flex flex-column">
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">INTERVENANTS</label>
+                                        <input type="text" placeholder="Clint/Njara" name="intervenant" class="input-modal" required>
+                                    </div>
+
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">LIEU D'INTERVENTION</label>
+                                        <select
+                                                id="lieu-intervention-edit"
+                                                class="selectpicker lieu-intervention"
+                                                data-show-subtext="true"
+                                                data-live-search="true"
+                                                name="lieuIntervention"
+                                                required
+                                        >
+                                            <option value="" selected disabled>LIEU D'INTERVETION</option>
+                                            <option value="BASE TANA">BASE TANA</option>
+                                            <option value="BASE TAMATAVE">BASE TAMATAVE</option>
+                                            <option value="SUR ROUTE">SUR ROUTE</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group no-sb d-flex align-items-start">
+                                        <label class="label-modal label-95" for="">COMMENTAIRES</label>
+                                        <textarea placeholder="Entretien 10 000 KM" id="comment_edit" name="commentaire" cols="30" rows="10"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-interv-comm m-19 p-19">
+                                <div class="d-flex flex-column">
+                                    <div class="form-group no-sb">
+                                        <label class="label-modal label-95" for="">COUT TOTAL <br>INTERVENTION <br>(TTC)</label>
+                                        <input type="text" id="total-prices-edit" placeholder="0" class="input-modal" readonly>
+                                        <input type="hidden" id="total-prices-hidden-edit" name="total_intervention">
+                                        <input type="hidden" name="id">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-interv-valider m-19 p-19">
+                                <button type="submit" href="#" id="new-intervention-edit" class="fond-lightGreen btn-maj float-right">
+                                    <span class="mx-0">VALIDER</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="modal-fiche-vehicule" tabindex="-1" role="dialog" aria-labelledby="exemple-fiche-vehicule" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="title-modal" class="modal-title secondary-title">FICHE VEHICULE</h2>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-fiche d-flex">
+                        <div class="img col-sm-5">
+                            <img id="image-modal" src="" alt="">
+                        </div>
+                        <div class="description col-sm-7">
+                            <ul>
+                                <li class="matricule">
+                                    <span id="immatriculation-modal"></span>
+                                </li>
+                                <li class="marque">
+                                    <span id="marque-modal"></span>
+                                </li>
+                                <li class="centre">
+                                    <span id="centre-modal"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="modal-body-nav">
+                            <nav class="array-nav">
+                                <ul class="d-flex justify-content-between">
+                                    <li><span @click="chooseVoyage" :class="{active : isVoyage}">VOYAGE EFFECTUES</span></li>
+                                    <li><span @click="chooseCarburant" :class="{active : isCarburant}">CARBURANT</span></li>
+                                    <li><span @click="choosePneus" :class="{active : isPneus}">PNEUS</span></li>
+                                    <li><span @click="chooseEntretien" :class="{active : isEntretien}">ENTRETIEN</span></li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <div class="modal-body-arrays array">
+                            <div class="trans_tableau in-modal">
+                                <table v-show="isVoyage" class="table table-in-modal" id="modal-array-voyage">
+                                    <thead>
+                                    <tr>
+                                        <th class="chauffeur">CHAUFFEUR</th>
+                                        <th class="client">CLIENT</th>
+                                        <th class="ot">OT</th>
+                                        <th class="date">DATE DEBUT</th>
+                                        <th class="date">DATE FIN</th>
+                                        <th class="trajet">TRAJET</th>
+                                        <th class="trajet">MONTANT</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="body-voyage">
+
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="6">TOTAL</td>
+                                        <td id="total_montant_voyage" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                                <table v-show="isCarburant" class="table table-in-modal" id="modal-array-carburant">
+                                    <thead>
+                                    <tr>
+                                        <th class="date">DATE/HEURE</th>
+                                        <th class="station">STATION</th>
+                                        <th class="kilometrage">KILOMETRAGE</th>
+                                        <th class="chauffeur">CHAUFFEUR</th>
+                                        <th class="client">CLIENT</th>
+                                        <th class="type">TYPE</th>
+                                        <th class="litrage">LITRAGE</th>
+                                        <th class="fond">FOND</th>
+                                        <th class="fond">CONSO</th>
+                                        <th class="station">TRAJET</th>
+                                        <th class="montant">MONTANT</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="body-carburant">
+
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="10">TOTAL</td>
+                                        <td id="total_montant_carburant" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                                <table v-show="isPneus" class="table table-in-modal" id="modal-array-pneus">
+                                    <thead>
+                                    <tr>
+                                        <th class="date">DATE/HEURE</th>
+                                        <th class="kilometrage">KILOMETRAGE</th>
+                                        <th class="num_serie">N° SERIE</th>
+                                        <th class="marque">MARQUE</th>
+                                        <th class="ref">REFERENCE</th>
+                                        <th class="position">POSITION</th>
+                                        <th>MONTANT</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="body-pneu">
+
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="6">TOTAL</td>
+                                        <td id="total_montant_pneu" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                                <table v-show="isEntretien" class="table table-in-modal" id="modal-array-entretien">
+                                    <thead>
+                                    <tr>
+                                        <th class="date">DATE DEBUT</th>
+                                        <th class="date">DATE FIN</th>
+                                        <th class="km">KM</th>
+                                        <th class="ot">OT</th>
+                                        <th class="motif">MOTIF</th>
+                                        <th class="pieces">PIECES</th>
+                                        <th class="intyervenant">INTERVENANT</th>
+                                        <th class="commentaire">COMMENTAIRE</th>
+                                        <th class="montant">COUT TOTAL</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="body-entretien">
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="8">TOTAL</td>
+                                        <td id="total_montant_intervenation" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {# modal detail pièce #}
+        <div class="modal fade" id="modal-piece-show" tabindex="-1" role="dialog" aria-labelledby="modalentree" aria-hidden="true">
+            <div class="modal-dialog mb-50" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title secondary-title">DETAILS PIECES</h2>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body modal-body-sortie no-mt">
+                        <table id="table_piece_hist" class="table table_in_modal" style="width:100%" >
+                            <thead>
+                            <tr>
+                                <th class="piece">PIECES</th>
+                                <th class="quantity">Qté</th>
+                                <th class="price">PRIX UNITAIRES(HT)</th>
+                                <th class="price">PRIX TOTAL (TTC)</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="2"></td>
+                                <td class="price modal-td-foot text-end" colspan="1">TOTAL TTC : </td>
+                                <td class="price  modal-td-foot"><span class="motant">0</span><span class="unite_ar"></span></td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="modal-fiche-chauffeur" tabindex="-1" role="dialog" aria-labelledby="exemple-fiche-chauffeur" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="title-modal" class="modal-title secondary-title">FICHE CHAUFFEUR</h2>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-fiche d-flex">
+                        <div class="img col-sm-5">
+                            <img id="image-modal-chauffeur" src="/images/icones_trans/avatar.png" alt="">
+                        </div>
+                        <div class="description col-sm-7">
+                            <ul>
+                                <li class="row matricule">
+                                    <div class="col-md-6">NOM</div> <div class="col-md-6"><span id="nom-modal"></span></div>
+                                </li>
+                                <li class="row marque">
+                                    <div class="col-md-6">APPELLATION</div> <div class="col-md-6"><span id="appelation-modal"></span></div>
+                                </li>
+                                <li class="row centre">
+                                    <div class="col-md-6">MATRICULE</div> <div class="col-md-6"><span id="matricule-modal"></span></div>
+                                </li>
+                                <li class="row centre">
+                                    <div class="col-md-6">AGE</div> <div class="col-md-6"><span id="age-modal"></span></div>
+                                </li>
+                                <li class="row matricule">
+                                    <div class="col-md-6">DATE D'EMBAUCHE</div> <div class="col-md-6"><span id="embauche-modal"></span></div>
+                                </li>
+                                <li class="row marque">
+                                    <div class="col-md-6">ANNCIENNETE</div> <div class="col-md-6"><span id="anciennete-modal"></span></div>
+                                </li>
+                                <li class="row marque">
+                                    <div class="col-md-6">CIN</div> <div class="col-md-6"><span id="cin-modal"></span></div>
+                                </li>
+                                <li class="row centre">
+                                    <div class="col-md-6">PERMIS</div> <div class="col-md-6"><span id="permis-modal"></span></div>
+                                </li>
+                                <li class="row centre">
+                                    <div class="col-md-6">PROCHAIN VISITE</div> <div class="col-md-6" id="visite-modal"></div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="modal-body-nav">
+                            <nav class="array-nav">
+                                <ul class="d-flex justify-content-between">
+                                    <li><span @click="chooseVoyage" :class="{active : isVoyage}">VOYAGE EFFECTUES</span></li>
+                                    <li><span @click="chooseCarburant" :class="{active : isCarburant}">CARBURANT</span></li>
+                                    <li><span @click="choosePneus" :class="{active : isPneus}">PNEUS</span></li>
+                                    <li><span @click="chooseEntretien" :class="{active : isEntretien}">ENTRETIEN</span></li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <div class="modal-body-arrays array">
+                            <div class="trans_tableau in-modal">
+                                <table v-show="isVoyage" class="table table-in-modal" id="modal-array-voyage">
+                                    <thead>
+                                    <tr>
+                                        <th class="chauffeur">VEHICULE</th>
+                                        <th class="client">CLIENT</th>
+                                        <th class="ot">OT</th>
+                                        <th class="date">DATE DEBUT</th>
+                                        <th class="date">DATE FIN</th>
+                                        <th class="trajet">TRAJET</th>
+                                        <th class="trajet">MONTANT</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="body-voyage-chauffeur">
+
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="6">TOTAL</td>
+                                        <td id="total_montant_voyage_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                                <table v-show="isCarburant" class="table table-in-modal" id="modal-array-carburant">
+                                    <thead>
+                                    <tr>
+                                        <th class="date">DATE/HEURE</th>
+                                        <th class="station">STATION</th>
+                                        <th class="kilometrage">KILOMETRAGE</th>
+                                        <th class="chauffeur">VEHICULE</th>
+                                        <th class="client">CLIENT</th>
+                                        <th class="type">TYPE</th>
+                                        <th class="litrage">LITRAGE</th>
+                                        <th class="fond">FOND</th>
+                                        <th class="station">TRAJET</th>
+                                        <th class="montant">MONTANT</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="body-carburant-chauffeur">
+
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="9">TOTAL</td>
+                                        <td id="total_montant_carburant_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                                <table v-show="isPneus" class="table table-in-modal" id="modal-array-pneus">
+                                    <thead>
+                                    <tr>
+                                        <th class="date">DATE/HEURE</th>
+                                        <th class="chauffeur">VEHICULE</th>
+                                        <th class="kilometrage">KILOMETRAGE</th>
+                                        <th class="num_serie">N° SERIE</th>
+                                        <th class="marque">MARQUE</th>
+                                        <th class="ref">REFERENCE</th>
+                                        <th class="position">POSITION</th>
+                                        <th>MONTANT</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="body-pneu-chauffeur">
+
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="7">TOTAL</td>
+                                        <td id="total_montant_pneu_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                                <table v-show="isEntretien" class="table table-in-modal" id="modal-array-entretien">
+                                    <thead>
+                                    <tr>
+                                        <th class="date">DATE DEBUT</th>
+                                        <th class="date">DATE FIN</th>
+                                        <th class="chauffeur">VEHICULE</th>
+                                        <th class="km">KM</th>
+                                        <th class="ot">OT</th>
+                                        <th class="motif">MOTIF</th>
+                                        <th class="pieces">PIECES</th>
+                                        <th class="intyervenant">INTERVENANT</th>
+                                        <th class="commentaire">COMMENTAIRE</th>
+                                        <th class="montant">COUT TOTAL</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="body-entretien-chauffeur">
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <td style="text-align:end;" colspan="9">TOTAL</td>
+                                        <td id="total_montant_intervenation_chauffeur" style="background-color: #99A4B8; color : #fff;" class="total"></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js'></script>
+    <script src='https://cdn.datatables.net/plug-ins/1.11.4/sorting/datetime-moment.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js'></script>
+    <script src='https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js'></script>
+    <script src='https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js'></script>
+    <script>
+        // jquery
+        $(document).ready(function(){
+            $.fn.dataTable.moment( 'DD/MM/YYYY' );
+            var format = new Intl.NumberFormat();
+            $(document).on('click', '#maj', function()
+            {
+                var modal = $("#modal-sortie-piece");
+                $('.selectpicker').selectpicker();
+                modal.modal('show');
+                app.$options.methods.reload();
+            });
+            $("#modal-sortie-piece").on('show.bs.modal', function (e) {
+                app.$options.methods.reload();
+            });
+            $("#modal-sortie-piece-edit").on('show.bs.modal', function (e) {
+                app.$options.methods.reload();
+                $('.qte-piece-edit').change();
+            });
+            // tableau sortie pièce
+            var tableSortiePiece = $('#tableau-sortie-piece').DataTable({
+                buttons: [
+                    {extend: 'excel', footer: true }
+                ],
+                "language": {
+                    "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                    "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                    "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                    "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                    "sInfoPostFix": "",
+                    "sInfoThousands": ",",
+                    "sLengthMenu": "Afficher _MENU_ éléments",
+                    "sLoadingRecords": "Chargement...",
+                    "sProcessing": "Traitement...",
+                    "sSearch": "Rechercher :",
+                    "sZeroRecords": "Aucun élément correspondant trouvé",
+                    "oPaginate": {
+                        "sFirst": "Premier",
+                        "sLast": "Dernier",
+                        "sNext": "Suivant",
+                        "sPrevious": "Précédent"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                        "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                    },
+                    "select": {
+                        "rows": {
+                            "_": "%d lignes sélectionnées",
+                            "0": "Aucune ligne sélectionnée",
+                            "1": "1 ligne sélectionnée"
+                        }
+                    }
+                },
+                "ajax" : {
+                    url : "/profile/intervention/list",
+                    type : 'POST',
+                    data: function(d){
+                        d.date1 = $('#date1').val();
+                        d.date2 = $('#date2').val();
+                        d.piece_id = $('#piece_id').val();
+                    },
+                    // success : function(response){
+                    //     alert(response);
+                    // },
+                    // error : function(){
+                    //     alert('erreur server');
+                    // },
+                    "dataSrc":"",
+
+                },columns: [
+                    { data: 'date_debut' },
+                    { data: 'date_fin' },
+                    { data: 'immatriculation' },
+                    { data: 'km' },
+                    { data: 'chauffeur' },
+                    { data: 'client' },
+                    { data: 'ot' },
+                    { data: 'motif' },
+                    { data: 'nb_pieces' },
+                    { data: 'intervenant' },
+                    { data: 'commentaire' },
+                    { data: 'total', render: $.fn.dataTable.render.number( ' ', ',', 2, '' ) },
+                ],
+                "columnDefs": [
+                    {
+                        "targets": -1,
+                        "data": null,
+                        "defaultContent": "<a href=\"#\">\n" +
+                            "                                <span class=\"fa fa-pencil edit\"></span>\n" +
+                            "                            </a>\n"
+                    },
+                    {
+                        "targets": 8,
+                        "createdCell": function (td, cellData, rowData, row, col) {
+                            var list = rowData.pieces;
+
+                            $(td).html(
+                                `<a href="#" data-id="`+rowData.id+`" data-pieces="`+JSON.stringify(list)+`" class="trigger_modal_sorti_piece link_facture">
+                                    <span class="total-piece">
+                                        `+cellData+`
+                                    </span>
+                                    <span>Pièces</span>
+                                    <span class="fa fa-info"></span>
+                                </a>
+                            `);
+                        }
+                    },
+                    {
+                        "targets": 11,
+                        "createdCell": function (td, cellData, rowData, row, col) {
+                            $(td).html(format.format(cellData));
+                        }
+                    },
+                    { className: "date", "targets": [0] },
+                    { className: "date", "targets": [1] },
+                    {
+                        className: "vehicule", "targets": [2],
+                        createdCell: function(td, cellData, rowData, row, col) {
+                            if (cellData) {
+                                $(td).html(
+                                    `<span onclick="loadVehicule(` +rowData.vehicule_id +`)">
+                                   `+ cellData +`
+                                </span>
+                            `);
+                            }
+                        }
+                    },
+                    { className: "km", "targets": [3] },
+                    { className: "chauffeur loadChauffeur", "targets": [4],"createdCell": function (td, cellData, rowData, row, col) {
+                            $(td).html(
+                                `<span onclick="loadChauffeur(` +rowData.chauffeur_id +`)">
+                                   `+ cellData +`
+                                </span>
+                            `);
+                        }
+                    },
+                    { className: "client", "targets": [5] },
+                    { className: "ot", "targets": [6] },
+                    { className: "motif", "targets": [7] },
+                    { className: "piece", "targets": [8] },
+                    { className: "intervenants", "targets": [9] },
+                    { className: "commentaire", "targets": [10] },
+                    { className: "cout", "targets": [11] },
+                    { className: `action
+                            {% if app.user.getTransportGarage() == '1' %}
+                                enable-link
+                            {% else %}
+                                 disable-link
+                            {% endif %}`, "targets": [12] },
+                ],
+                "footerCallback": function ( row, data, start, end, display ) {
+                    var format = new Intl.NumberFormat();
+                    var api = this.api();
+
+                    // Remove the formatting to get integer data for summation
+                    var intVal = function ( i ) {
+                        return typeof i === 'string' ?
+                            parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+
+                    // Total over all pages
+                    /*total = api
+                        .column( 8 )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);*/
+
+                    // Total over this page
+                    pageTotal = api
+                        .column( 11, { page: 'current'} )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+
+                    // Update footer
+                    $( api.column( 11 ).footer() ).html(
+                        '<span class="montant">'+format.format(pageTotal)+'</span> <span class="unite_ar">Ar</span>'
+                    );
+                },
+
+                //annule le tri
+                order : [[0 , 'desc']],
+                ordering : true,
+                searching:true,
+                responsive: true,
+                scrollY: false,
+                scrollX: true,
+                scrollCollapse: true,
+                paging: true,
+                autoFill: true
+            });
+            new $.fn.dataTable.FixedHeader(tableSortiePiece);
+            $('#mySearchText').on( 'keyup', function () {
+                tableSortiePiece.search($(this).val()).draw();
+            });
+            // anim add interv
+            $('.btn-remove-item-int').hover(
+                function(){
+                    $(this).siblings().css('color', 'red')
+                },
+                function(){
+                    $(this).siblings().css('color', '#333')
+                }
+            )
+            /* active modal datbleau detail pièces */
+            $(document).on('click', '.trigger_modal_sorti_piece', function(ev){
+                var int_id = $(this).attr('data-id');
+                ev.preventDefault();
+                // préparation du tableau avant le load de tableau
+                // voici un exemple
+                /*var arrayDetail = loadDataTableArrayByAjax(
+                    "tableau-sortie-piece",
+                    "/profile/testUrl", // url
+                    {
+                        allocation_id : 1
+                    }
+                )*/
+                if ( $.fn.dataTable.isDataTable( '#tableau-detail-piece' ) ) {
+                    table.destroy();
+                    table = $('#tableau-detail-piece').DataTable({
+                        "language": {
+                            "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                            "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                            "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                            "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                            "sInfoPostFix": "",
+                            "sInfoThousands": ",",
+                            "sLengthMenu": "Afficher _MENU_ éléments",
+                            "sLoadingRecords": "Chargement...",
+                            "sProcessing": "Traitement...",
+                            "sSearch": "Rechercher :",
+                            "sZeroRecords": "Aucun élément correspondant trouvé",
+                            "oPaginate": {
+                                "sFirst": "Premier",
+                                "sLast": "Dernier",
+                                "sNext": "Suivant",
+                                "sPrevious": "Précédent"
+                            },
+                            "oAria": {
+                                "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                                "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                            },
+                            "select": {
+                                "rows": {
+                                    "_": "%d lignes sélectionnées",
+                                    "0": "Aucune ligne sélectionnée",
+                                    "1": "1 ligne sélectionnée"
+                                }
+                            }
+                        },
+                        "ajax" : {
+                            url : "/profile/intervention/listpiece",
+                            type : 'POST',
+                            data: function(d){
+                                d.id = int_id;
+                            },
+                            // success : function(response){
+                            //     alert(response);
+                            // },
+                            // error : function(){
+                            //     alert('erreur server');
+                            // },
+                            "dataSrc":"",
+
+                        },
+                        columns: [
+                            { data: 'designation' },
+                            { data: 'code' },
+                            { data: 'qte' },
+                            { data: 'prix' },
+                            { data: 'total' },
+                        ],
+                        "columnDefs": [
+                            {
+                                "targets": 3,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            {
+                                "targets": 4,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            { className: "td-in-modal piece", "targets": [0] },
+                            { className: "td-in-modal code", "targets": [1] },
+                            { className: "td-in-modal quantity", "targets": [2] },
+                            { className: "td-in-modal price", "targets": [3] },
+                            { className: "td-in-modal price", "targets": [4] },
+                        ],
+                        "footerCallback": function ( row, data, start, end, display ) {
+                            var format = new Intl.NumberFormat();
+                            var api = this.api();
+
+                            // Remove the formatting to get integer data for summation
+                            var intVal = function ( i ) {
+                                return typeof i === 'string' ?
+                                    parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                                    typeof i === 'number' ?
+                                        i : 0;
+                            };
+
+                            // Total over all pages
+                            /*total = api
+                                .column( 8 )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0);*/
+
+                            // Total over this page
+                            pageTotal = api
+                                .column( 4, { page: 'current'} )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0 );
+
+                            // Update footer
+                            $( api.column( 4 ).footer() ).html(
+                                '<span class="montant">'+format.format(pageTotal)+'</span> <span class="unite_ar">Ar</span>'
+                            );
+                        },
+                        //annule le tri
+                        order : [[0 , 'desc']],
+                        ordering : true,
+                        searching:true,
+                        responsive: true,
+                        scrollY: false,
+                        scrollX: true,
+                        scrollCollapse: true,
+                        paging: true,
+                        autoFill: true
+                    });
+                }
+                else {
+
+                    table = $('#tableau-detail-piece').DataTable( {
+                        paging: false,
+                        "language": {
+                            "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                            "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                            "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                            "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                            "sInfoPostFix": "",
+                            "sInfoThousands": ",",
+                            "sLengthMenu": "Afficher _MENU_ éléments",
+                            "sLoadingRecords": "Chargement...",
+                            "sProcessing": "Traitement...",
+                            "sSearch": "Rechercher :",
+                            "sZeroRecords": "Aucun élément correspondant trouvé",
+                            "oPaginate": {
+                                "sFirst": "Premier",
+                                "sLast": "Dernier",
+                                "sNext": "Suivant",
+                                "sPrevious": "Précédent"
+                            },
+                            "oAria": {
+                                "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                                "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                            },
+                            "select": {
+                                "rows": {
+                                    "_": "%d lignes sélectionnées",
+                                    "0": "Aucune ligne sélectionnée",
+                                    "1": "1 ligne sélectionnée"
+                                }
+                            }
+                        },
+                        "ajax" : {
+                            url : "/profile/intervention/listpiece",
+                            type : 'POST',
+                            data: function(d){
+                                d.id = int_id;
+                            },
+                            // success : function(response){
+                            //     alert(response);
+                            // },
+                            // error : function(){
+                            //     alert('erreur server');
+                            // },
+                            "dataSrc":"",
+
+                        },
+                        columns: [
+                            { data: 'designation' },
+                            { data: 'code' },
+                            { data: 'qte' },
+                            { data: 'prix' },
+                            { data: 'total' },
+                        ],
+                        "columnDefs": [
+                            {
+                                "targets": 3,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            {
+                                "targets": 4,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            { className: "td-in-modal piece", "targets": [0] },
+                            { className: "td-in-modal code", "targets": [1] },
+                            { className: "td-in-modal quantity", "targets": [2] },
+                            { className: "td-in-modal price", "targets": [3] },
+                            { className: "td-in-modal price", "targets": [4] },
+                        ],
+                        "footerCallback": function ( row, data, start, end, display ) {
+                            var format = new Intl.NumberFormat();
+                            var api = this.api();
+
+                            // Remove the formatting to get integer data for summation
+                            var intVal = function ( i ) {
+                                return typeof i === 'string' ?
+                                    parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                                    typeof i === 'number' ?
+                                        i : 0;
+                            };
+
+                            // Total over all pages
+                            /*total = api
+                                .column( 8 )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0);*/
+
+                            // Total over this page
+                            pageTotal = api
+                                .column( 4, { page: 'current'} )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0 );
+
+                            // Update footer
+                            $( api.column( 4 ).footer() ).html(
+                                '<span class="montant">'+format.format(pageTotal)+'</span> <span class="unite_ar">Ar</span>'
+                            );
+                        },
+                        //annule le tri
+                        order : [[0 , 'desc']],
+                        ordering : true,
+                        searching:true,
+                        responsive: true,
+                        scrollY: false,
+                        scrollX: true,
+                        scrollCollapse: true,
+                        paging: true,
+                        autoFill: true
+                    } );
+                }
+                $('.modal').on('shown.bs.modal', function() {
+                    table.columns.adjust()
+                })
+                $("#modal-detail-piece").modal('show');
+            })
+
+            function loadDataTableArrayByAjax(elamentId, url, dataJson){ // elementId et url sont des string
+                return arrayDetailArray = $('#' + elementId).DataTable({
+                    "language": {
+                        "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                        "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                        "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                        "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                        "sInfoPostFix": "",
+                        "sInfoThousands": ",",
+                        "sLengthMenu": "Afficher _MENU_ éléments",
+                        "sLoadingRecords": "Chargement...",
+                        "sProcessing": "Traitement...",
+                        "sSearch": "Rechercher :",
+                        "sZeroRecords": "Aucun élément correspondant trouvé",
+                        "oPaginate": {
+                            "sFirst": "Premier",
+                            "sLast": "Dernier",
+                            "sNext": "Suivant",
+                            "sPrevious": "Précédent"
+                        },
+                        "oAria": {
+                            "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                            "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                        },
+                        "select": {
+                            "rows": {
+                                "_": "%d lignes sélectionnées",
+                                "0": "Aucune ligne sélectionnée",
+                                "1": "1 ligne sélectionnée"
+                            }
+                        }
+                    },
+                    "ajax" : {
+                        url : url, // any am Clientcontroller
+                        type : 'POST',
+                        data : jsonData,
+                        // success : function(response){
+                        //     alert(response);
+                        // },
+                        // error : function(){
+                        //     alert('erreur server');
+                        // },
+                        "dataSrc":"",
+
+                    },
+                    "initComplete":function( settings, json){
+
+                        var allNodes = $('#' + elementId).DataTable().cells().nodes();
+                        $.each($( '.montant', allNodes), function(index, node) {
+                            var currency = new Intl.NumberFormat();
+                            var val = currency.format(node.innerHTML.replaceAll(" ", ""));
+                            node.innerHTML = val;
+                        });
+                    },
+                    //annule le tri
+                    order : [[0 , 'desc']],
+                    ordering : true,
+                    searching:true,
+                    responsive: true,
+                    scrollY: false,
+                    scrollX: true,
+                    scrollCollapse: true,
+                    paging: true,
+                    autoFill: true
+                });
+            }
+
+            function totalIntervention(){
+                var total = 0;
+                $('.total-prix').each(function () {
+                    total += parseInt($(this).attr('data-prix'));
+                })
+                total *= 1.2
+                $('#total-prices').val(format.format(total));
+                $('#total-prices-hidden').val(total);
+
+            }
+
+            function totalInterventionEdit(){
+                var total = 0;
+                $('.total-prix-edit').each(function () {
+                    total += parseInt($(this).attr('data-prix'));
+                })
+                total *= 1.2;
+                $('#total-prices-edit').val(format.format(total));
+                $('#total-prices-hidden-edit').val(total);
+
+            }
+            $(document).on('change', 'select.select-piece-by-code', function(){
+                var currentDes = $(this).val();
+                var hisSiblingSelectDes = $(this).parent().parent().parent().find('.select-piece-by-des')
+                hisSiblingSelectDes.val(currentDes);
+                hisSiblingSelectDes.trigger('change');
+            })
+            $(document).on('change', 'select.select-piece-by-code-edit', function(){
+                var currentDes = $(this).val();
+                var hisSiblingSelectDes = $(this).parent().parent().parent().find('.select-piece-edit')
+                hisSiblingSelectDes.val(currentDes);
+                hisSiblingSelectDes.trigger('change');
+            })
+            $(document).on('change', 'select.select-piece-by-des', function(){
+
+                $('#qte-'+$('option:selected',this).data("index")).attr('max',$('option:selected',this).attr("data-qte"));
+                $('#qte-'+$('option:selected',this).data("index")).attr('data-prix',$('option:selected',this).data("prix"));
+                $('#qte-'+$('option:selected',this).data("index")).attr("disabled",false);
+                $('#qte-'+$('option:selected',this).data("index")).val(1);
+                $('#qte-'+$('option:selected',this).data("index")).change();
+            })
+
+            $(document).on('change', 'select.select-piece-edit', function(){
+                $('#qte-'+$('option:selected',this).data("index")).attr('max',$('option:selected',this).attr("data-qte"));
+                $('#qte-'+$('option:selected',this).data("index")).attr('data-prix',$('option:selected',this).data("prix"));
+                $('#qte-'+$('option:selected',this).data("index")).attr("disabled",false);
+                $('#qte-'+$('option:selected',this).data("index")).val(1);
+                $('#qte-'+$('option:selected',this).data("index")).change();
+            })
+
+            $(document).on('keyup change', 'input.qte-piece', function(){
+                var qte = $(this).val();
+                var prix = parseInt($(this).attr("data-prix"));
+                $('#total-'+$(this).data('index')).val(format.format(qte*prix));
+                $('#total-'+$(this).data('index')).attr('data-prix',qte*prix);
+                totalIntervention();
+
+            })
+
+            $(document).on('keyup change', 'input.qte-piece-edit', function(){
+                var qte = $(this).val();
+                var prix = parseInt($(this).attr("data-prix"));
+                $('#total-edit-'+$(this).data('index')).val(format.format(qte*prix));
+                $('#total-edit-'+$(this).data('index')).attr('data-prix',qte*prix);
+                totalInterventionEdit();
+
+            })
+            function formatDateFront($dateString){
+                var splitEspace = $dateString.split(' ');
+                var datejmy = splitEspace[0];
+                var datehi = splitEspace[1];
+                var dateHM = datehi.split(':')
+                var date1 = datejmy.split('/');
+                return date1[2]+'-'+date1[1]+'-'+date1[0] + 'T' + dateHM[0] + ':' + dateHM[1];
+            }
+
+            $('#tableau-sortie-piece tbody').on( 'click', 'span.edit', function () {
+                app.$options.methods.reload();
+                var data = tableSortiePiece.row( $(this).parents('tr') ).data();
+
+                var date_debut = formatDateFront(data.date_debut);
+                //console.log(date_debut)
+                var date_fin = formatDateFront(data.date_fin);
+                app.$data.arrayInputEdit = data.pieces;
+                app.$data.arrayInputEditNew = [];
+                $('input[name=date_debut]').val(date_debut);
+                $('input[name=date_fin]').val(date_fin);
+                $('#select-vehicule-edit').val(data.vehicule_id);
+                $('#select-client').val(data.client);
+                $('#select-chauffeur').val(data.chauffeur_id);
+                $('input[name=ot]').val(data.ot);
+                $('input[name=km]').val(data.km);
+                $('input[name=motif]').val(data.motif);
+                //$('input[name=intervenant]').val(data.intervenant)
+                if(data.intervenant){
+                    $('input[name=intervenant]').val(data.intervenant.split('<br/>')[0]);
+                    $('#lieu-intervention-edit').val(data.intervenant.split('<br/>')[1]);
+                }
+                $('#lieu-intervention-edit').trigger('change');
+                $('#comment_edit').val(data.commentaire);
+                $('input[name=id]').val(data.id);
+                $('#modal-sortie-piece-edit').modal('toggle');
+                $('.selectpicker').selectpicker('refresh');
+                setTimeout(() => {
+                    $('.qte-piece-edit').change();
+                    $('.kilometrage-input').change()
+                }, 450);
+
+            } );
+
+            var forms = document.getElementsByClassName('form-new-intervention');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault(false);
+                    if (form.checkValidity() === false) {;
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }else{
+                        var myform = $('form.form-new-intervention')[0]; // You need to use standard javascript object here
+                        var formData = new FormData(myform);
+                        $.ajax({
+                            type: "POST",
+                            url: "/profile/intervention/new",
+                            data: formData,
+                            contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                            processData: false, // NEEDED, DON'T OMIT THIS
+                            beforeSend: function(){
+                                $('#new-intervention').html('PATIENTER...');
+                                $('#new-intervention').prop('disabled',true);
+                            },
+                            success: function(response) {
+                                if("success" == response.value){
+                                    $('#new-intervention').html('VALIDER');
+                                    $('#new-intervention').prop('disabled',false);
+                                    $('form.form-new-intervention').trigger("reset");
+                                    $('.selectpicker').selectpicker('refresh');
+                                    app.resetInput();
+                                    tableSortiePiece.ajax.reload(function(response){
+                                        $('#modal-sortie-piece').modal('toggle');
+                                    }, false);
+                                }
+                            },
+                        });
+                    }
+                });
+            })
+
+            var forms2 = document.getElementsByClassName('form-new-intervention-edit');
+            // Loop over them and prevent submission
+            var validation2 = Array.prototype.filter.call(forms2, function(form) {
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault(false);
+                    if (form.checkValidity() === false) {;
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }else{
+                        var myform = $('form.form-new-intervention-edit')[0]; // You need to use standard javascript object here
+                        var formData = new FormData(myform);
+                        $.ajax({
+                            type: "POST",
+                            url: "/profile/intervention/update",
+                            data: formData,
+                            contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                            processData: false, // NEEDED, DON'T OMIT THIS
+                            beforeSend: function(){
+                                $('#new-intervention-edit').html('PATIENTER...');
+                                $('#new-intervention-edit').prop('disabled',true);
+                            },
+                            success: function(response) {
+                                if("success" == response.value){
+                                    $('#new-intervention-edit').html('VALIDER');
+                                    $('#new-intervention-edit').prop('disabled',false);
+                                    $('form.form-new-intervention-edit').trigger("reset");
+                                    $('.selectpicker').selectpicker('refresh');
+                                    app.resetInput();
+                                    tableSortiePiece.ajax.reload(function(response){
+                                        $('#modal-sortie-piece-edit').modal('toggle');
+                                    }, false);
+                                }
+                            },
+                        });
+                    }
+                });
+            })
+            $('#export').on('click',function () {
+                tableSortiePiece.buttons('.buttons-excel').trigger();
+            });
+            $('.kilometrage-input').on( 'input change', function () {
+                $(this).val($(this).val().replace(/ /g,""));
+                $(this).val($(this).val().replace(/\B(?=(\d{3})+(?!\d))/g, " "));
+            });
+
+            // show bootstrap modal in nr piece
+            $(document).on('click', '.npiece', function(){
+                var int_id = $(this).attr('data-intervention');
+                /*$.get("/profile/trans/load_liste_piece_int", { int_id : int_id }, function(data){
+                    $("#body-entretien-piece-liste").html(data);
+
+                    $('#modal-piece-show').modal('show')
+                })*/
+                if($.fn.dataTable.isDataTable( '#table_piece_hist' )){
+                    table2.destroy();
+                    table2 = $('#table_piece_hist').DataTable({
+                        "language": {
+                            "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                            "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                            "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                            "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                            "sInfoPostFix": "",
+                            "sInfoThousands": ",",
+                            "sLengthMenu": "Afficher _MENU_ éléments",
+                            "sLoadingRecords": "Chargement...",
+                            "sProcessing": "Traitement...",
+                            "sSearch": "Rechercher :",
+                            "sZeroRecords": "Aucun élément correspondant trouvé",
+                            "oPaginate": {
+                                "sFirst": "Premier",
+                                "sLast": "Dernier",
+                                "sNext": "Suivant",
+                                "sPrevious": "Précédent"
+                            },
+                            "oAria": {
+                                "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                                "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                            },
+                            "select": {
+                                "rows": {
+                                    "_": "%d lignes sélectionnées",
+                                    "0": "Aucune ligne sélectionnée",
+                                    "1": "1 ligne sélectionnée"
+                                }
+                            }
+                        },
+                        "ajax" : {
+                            url : "/profile/intervention/listpiece",
+                            type : 'POST',
+                            data: function(d){
+                                d.id = int_id;
+                            },
+                            // success : function(response){
+                            //     alert(response);
+                            // },
+                            // error : function(){
+                            //     alert('erreur server');
+                            // },
+                            "dataSrc":"",
+
+                        },
+                        columns: [
+                            { data: 'designation' },
+                            { data: 'qte' },
+                            { data: 'prix' },
+                            { data: 'total' },
+                        ],
+                        "columnDefs": [
+                            {
+                                "targets": 2,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            {
+                                "targets": 3,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            { className: "td-in-modal piece", "targets": [0] },
+                            { className: "td-in-modal quantity", "targets": [1] },
+                            { className: "td-in-modal price", "targets": [2] },
+                            { className: "td-in-modal price", "targets": [3] },
+                        ],
+                        "footerCallback": function ( row, data, start, end, display ) {
+                            var api = this.api();
+
+                            // Remove the formatting to get integer data for summation
+                            var intVal = function ( i ) {
+                                return typeof i === 'string' ?
+                                    parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                                    typeof i === 'number' ?
+                                        i : 0;
+                            };
+
+                            // Total over all pages
+                            /*total = api
+                                .column( 8 )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0);*/
+
+                            // Total over this page
+                            pageTotal = api
+                                .column( 3, { page: 'current'} )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0 );
+
+                            // Update footer
+                            $( api.column( 3 ).footer() ).html(
+                                '<span class="montant">'+format.format(pageTotal)+'</span> <span class="unite_ar">Ar</span>'
+                            );
+                        },
+                        //annule le tri
+                        order : [[0 , 'desc']],
+                        ordering : true,
+                        searching:true,
+                        responsive: true,
+                        scrollY: false,
+                        scrollX: true,
+                        scrollCollapse: true,
+                        paging: true,
+                        autoFill: true
+                    });
+                }else{
+                    table2 = $('#table_piece_hist').DataTable({
+                        "language": {
+                            "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                            "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                            "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                            "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                            "sInfoPostFix": "",
+                            "sInfoThousands": ",",
+                            "sLengthMenu": "Afficher _MENU_ éléments",
+                            "sLoadingRecords": "Chargement...",
+                            "sProcessing": "Traitement...",
+                            "sSearch": "Rechercher :",
+                            "sZeroRecords": "Aucun élément correspondant trouvé",
+                            "oPaginate": {
+                                "sFirst": "Premier",
+                                "sLast": "Dernier",
+                                "sNext": "Suivant",
+                                "sPrevious": "Précédent"
+                            },
+                            "oAria": {
+                                "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                                "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                            },
+                            "select": {
+                                "rows": {
+                                    "_": "%d lignes sélectionnées",
+                                    "0": "Aucune ligne sélectionnée",
+                                    "1": "1 ligne sélectionnée"
+                                }
+                            }
+                        },
+                        "ajax" : {
+                            url : "/profile/intervention/listpiece",
+                            type : 'POST',
+                            data: function(d){
+                                d.id = int_id;
+                            },
+                            // success : function(response){
+                            //     alert(response);
+                            // },
+                            // error : function(){
+                            //     alert('erreur server');
+                            // },
+                            "dataSrc":"",
+
+                        },
+                        columns: [
+                            { data: 'designation' },
+                            { data: 'qte' },
+                            { data: 'prix' },
+                            { data: 'total' },
+                        ],
+                        "columnDefs": [
+                            {
+                                "targets": 2,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            {
+                                "targets": 3,
+                                "createdCell": function (td, cellData, rowData, row, col) {
+                                    $(td).html(format.format(cellData)+'<span class="unite_ar"></span>');
+                                }
+                            },
+                            { className: "td-in-modal piece", "targets": [0] },
+                            { className: "td-in-modal quantity", "targets": [1] },
+                            { className: "td-in-modal price", "targets": [2] },
+                            { className: "td-in-modal price", "targets": [3] },
+                        ],
+                        "footerCallback": function ( row, data, start, end, display ) {
+                            var format = new Intl.NumberFormat();
+                            var api = this.api();
+
+                            // Remove the formatting to get integer data for summation
+                            var intVal = function ( i ) {
+                                return typeof i === 'string' ?
+                                    parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                                    typeof i === 'number' ?
+                                        i : 0;
+                            };
+
+                            // Total over all pages
+                            /*total = api
+                                .column( 8 )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0);*/
+
+                            // Total over this page
+                            pageTotal = api
+                                .column( 3, { page: 'current'} )
+                                .data()
+                                .reduce( function (a, b) {
+                                    return intVal(a) + intVal(b);
+                                }, 0 );
+
+                            // Update footer
+                            $( api.column( 3 ).footer() ).html(
+                                '<span class="montant">'+format.format(pageTotal)+'</span> <span class="unite_ar">Ar</span>'
+                            );
+                        },
+                        //annule le tri
+                        order : [[0 , 'desc']],
+                        ordering : true,
+                        searching:true,
+                        responsive: true,
+                        scrollY: false,
+                        scrollX: true,
+                        scrollCollapse: true,
+                        paging: true,
+                        autoFill: true
+                    });
+                }
+                $('#modal-piece-show').on('shown.bs.modal', function() {
+                    table2.columns.adjust()
+                })
+                $("#modal-piece-show").modal('show');
+            })
+            $('.btn-filter').click(function () {
+                tableSortiePiece.ajax.reload(function(response){
+
+                }, false);
+            })
+            $('.btn-reset').click(function () {
+                $('#date1').val('');
+                $('#date2').val('');
+                $('#piece_id').val('').selectpicker('refresh');
+                tableSortiePiece.ajax.reload(function(response){
+
+                }, false);
+            })
+        });
+
+        function loadVehicule(id) {
+            app.loadVehicule(id);
+        }
+        function loadChauffeur(id) {
+            app.loadChauffeur(id);
+        }
+
+        // vue
+         Vue.config.ignoredElements = [/^ion-/]
+        const app = new Vue({
+            el:"#app",
+            delimiters:['${', '}'],
+            data(){
+                return {
+                    arrayInput : [
+                        {
+                            desValue : '',
+                            qteValue : 1,
+                            priceValue : '',
+                            delet: false
+                        }
+                    ],
+                    uniteInterevenant : '',
+                    valueIntervenant : '',
+                    arrayIntervenant : [],
+                    arrayInputEdit : [],
+                    arrayInputEditNew : [],
+                    optionSelect : [],
+                    test : 0,
+                    isVoyage : true,
+                    isCarburant : false,
+                    isPneus : false,
+                    isEntretien : false,
+                }
+            },
+            // sopapa : https://stackoverflow.com/questions/34825065/vuejs-v-model-array-in-multiple-input
+            methods:{
+                addIntervenant : function(nom){
+                    if(nom != ""){
+                        this.arrayIntervenant.push(nom);
+                    }
+                    this.valueIntervenant = this.arrayIntervenant.join(',')
+                    this.uniteInterevenant = '';
+                    //console.log(this.arrayIntervenant, this.valueIntervenant)
+                },
+                deleteItemIntervenant: function (index) {
+                    this.arrayIntervenant.splice(index, 1);
+                },
+                incrementInputLength: function(){
+                    this.arrayInput.push({
+                        desValue : '',
+                        qteValue : 1,
+                        priceValue : '',
+                        delet : true
+                    });
+                    this.$nextTick(function () {
+                        $('.select-piece-by-des').selectpicker();
+                        $('.select-piece-by-code').selectpicker();
+                    })
+                },
+
+                incrementInputLengthEdit: function(){
+                    this.arrayInputEditNew.push({
+                        desValue : '',
+                        qteValue : 1,
+                        priceValue : '',
+                        delet : true
+                    });
+                    this.$nextTick(function () {
+                        $('.select-piece-by-code-edit').selectpicker();
+                        $('.select-piece-edit').selectpicker();
+                    })
+                },
+
+                deleteInput: function (index) {
+                    this.arrayInput.splice(index, 1);
+                },
+
+                deleteInputEdit: function (index) {
+                    this.arrayInputEditNew.splice(index, 1);
+                },
+
+                resetInput: function(){
+                    this.arrayInput = [
+                        {
+                            desValue : '',
+                            qteValue : 1,
+                            priceValue : '',
+                            delet: false
+                        }
+                    ],
+                        this.arrayInputEditNew = []
+                },
+
+                reload: function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "/profile/garage/reload",
+                        success: function(data) {
+                            app.optionSelect= data;
+                            $('.select-piece-by-des').selectpicker('refresh');
+                            $('.select-piece-by-code').selectpicker('refresh');
+                            $('.select-piece-edit').selectpicker('refresh');
+                        },
+                    });
+                },
+                allSetToFalse(){
+                    this.isVoyage = false;
+                    this.isCarburant = false;
+                    this.isPneus = false;
+                    this.isEntretien = false
+                },
+                chooseVoyage(){
+                    this.allSetToFalse();
+                    this.isVoyage = true;
+                },
+                chooseCarburant(){
+                    this.allSetToFalse();
+                    this.isCarburant = true;
+                },
+                choosePneus(){
+                    this.allSetToFalse();
+                    this.isPneus = true;
+                },
+                chooseEntretien(){
+                    this.allSetToFalse();
+                    this.isEntretien = true;
+                },
+                loadVehicule(id){
+                    let self = this; //<---added
+                    var data = {
+                        'vehicule_id' : id
+                    }
+                    $.ajax({
+                        url : "/profile/load_vehicule_id",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+
+                            var imagePath = "{{ asset('uploads/vehicules/')}}";
+                            $('#immatriculation-modal').text(data[0].immatriculation)
+                            $('#marque-modal').text(data[0].vehicule_marque)
+                            $('#centre-modal').text(data[0].vehicule_centre)
+                            data[0].vehicule_image ? $("#image-modal").attr('src', imagePath + data[0].vehicule_image) : $("#image-modal").attr('src','');
+                        },
+                        complete : function(data){
+                            $('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                    $.ajax({
+                        url : "/profile/load_vehicule",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+
+                            //voyage
+                            var htmlVoyage = '';
+                            var totalVoyage = 0;
+                            data.ficheVoyage.forEach((item, index) => {
+                                totalVoyage += parseInt(item.voyage_montant);
+                                htmlVoyage += `
+                                    <tr>
+                                        <td class="chauffeur">${ item.chauffeur_voyage ? item.chauffeur_voyage : '' }</td>
+                                        <td class="client">${ item.client_voyage ? item.client_voyage : '' }</td>
+                                        <td class="ot">${ item.voyage_ot ? item.voyage_ot : '' }</td>
+                                        <td class="date">${ item.voyage_dd ? self.splitDate(item.voyage_dd.date)  : '' }</td>
+                                        <td class="date">${ item.voyage_df ? self.splitDate(item.voyage_df.date) : '' }</td>
+                                        <td class="trajet">${ item.voyage_trajet ? item.voyage_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.voyage_montant ? self.formatCurency(item.voyage_montant) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_voyage").text(self.formatCurency(totalVoyage))
+                            $("#body-voyage").html(htmlVoyage);
+
+                            //carburant
+                            var htmlCarburant = '';
+                            var totalCarburant = 0;
+                            data.ficheCarburant.forEach((item, index) => {
+                                totalCarburant += parseInt(item.carb_montant);
+                                htmlCarburant += `
+                                    <tr>
+                                        <td class="date">${ item.date_carb ? self.splitDate(item.date_carb.date) : '' }</td>
+                                        <td class="station">${ item.carb_station ? item.carb_station  : '' }</td>
+                                        <td class="kilometrage">${ item.carb_kilometrage ? self.formatKilometrage(item.carb_kilometrage) : '' }</td>
+                                        <td class="chauffeur">${ item.carb_sortie_chauffeur ? item.carb_sortie_chauffeur : '' }</td>
+                                        <td class="client">${ item.carb_client ? item.carb_client : '' }</td>
+                                        <td class="type">${ item.carb_type ? item.carb_type : '' }</td>
+                                        <td class="litrage">${ item.carb_litrage ? self.formatLitrage(item.carb_litrage) : '' }</td>
+                                        <td class="fond">${ item.carb_fond ? self.formatLitrage(item.carb_fond) : '' }</td>
+                                        <td class="fond">${ item.conso ? item.conso : '' }</td>
+                                        <td class="trajet">${ item.carb_trajet ? item.carb_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.carb_montant ? self.formatCurency(item.carb_montant) : ''}</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_carburant").text(self.formatCurency(totalCarburant))
+                            $("#body-carburant").html(htmlCarburant);
+
+                            //pneu
+                            var htmlPneu = '';
+                            var totalPneu = 0;
+                            if(data.fichePneu.length > 0){
+                                data.fichePneu.forEach((item, index) => {
+                                    totalPneu += item.pneu_montant != null ? parseInt(item.pneu_montant.replaceAll(' ', '')) : 0;
+                                    htmlPneu += `
+                                        <tr>
+                                            <td class="date">${ item.date_pneu ? self.splitDate(item.date_pneu.date) : '' }</td>
+                                            <td class="kilometrage">${ item.pneu_kilometrage ? self.formatKilometrage(item.pneu_kilometrage) : '' }</td>
+                                            <td class="num_serie">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="marque">${ item.pneu_marque ? item.pneu_marque : '' }</td>
+                                            <td class="ref">${ item.pneu_position ? item.pneu_position : '' }</td>
+                                            <td class="position">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="montant-sold">${ item.pneu_montant ? self.formatCurency(item.pneu_montant.replaceAll(' ', '')) : '' }</td>
+                                        </tr>
+                                    `;
+                                })
+                            }
+                            $("#total_montant_pneu").text(self.formatCurency(totalPneu))
+                            $("#body-pneu").html(htmlPneu);
+
+
+                            var htmlInt = '';
+                            var totalInt = 0;
+                            data.fichePiece.forEach((item, index) => {
+                                totalInt += parseInt(item.int_total);
+                                htmlInt += `
+                                    <tr>
+                                        <td class="date">${ item.int_date_fin ? self.splitDate(item.int_date_fin.date) : '' }</td>
+                                        <td class="date">${ item.int_date_debut ? self.splitDate(item.int_date_debut.date) : '' }</td>
+                                        <td class="km">${ item.int_km ? item.int_km : '' }</td>
+                                        <td class="ot">${ item.int_ot ? item.int_ot : '' }</td>
+                                        <td class="motif">${ item.int_motif ? item.int_motif : '' }</td>
+                                        <td class="pieces">
+                                            <span data-intervention="`+ item.intervention_id +`" class="npiece" style="${ item.nbr_piece_intervention ? 'display : block;' : 'display:none;' }">
+                                                ${ item.nbr_piece_intervention ? self.toFixed(item.nbr_piece_intervention) : 0 } pièces<i class="fa fa-detail"></i>
+                                            </span>
+                                        </td>
+                                        <td class="intervenant">${ item.intervenant ? item.intervenant : '' }</td>
+                                        <td class="commentaire">${ item.int_conmmentaire ? item.int_conmmentaire: '' }</td>
+                                        <td class="montant-sold">${ item.int_total ? self.formatCurency(item.int_total) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_intervenation").text(self.formatCurency(totalInt))
+                            $("#body-entretien").html(htmlInt);
+                        },
+                        complete : function(data){
+                            //$('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                },
+                splitDate(date){
+                    var dateS = date.split('.');
+                    return dateS[0];
+                },
+                toFixed(val){
+                    var valAff = parseFloat(val).toFixed(2);
+                    if((valAff * 100) % 100 == 0){
+                        return val;
+                    }else{
+                        return valAff;
+                    }
+                },
+                formatCurency(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " Ar" ;
+                    }else{
+                        return 0;
+                    }
+
+                },
+                formatLitrage(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " L" ;
+                    }else{
+                        return 0;
+                    }
+
+                },
+                formatKilometrage(montant){
+                    var test = new Intl.NumberFormat();
+                    if(montant){
+                        var val = test.format(montant);
+                        return val + " KM" ;
+                    }else{
+                        return 0;
+                    }
+
+                },
+                loadChauffeur(id){
+                    let self = this; //<---added
+                    $('#image-modal-chauffeur').attr("src","/images/icones_trans/avatar.png");
+                    $('#visite-modal').html('');
+                    $.ajax({
+                        url: "/profile/transport/detail/chauffeur",
+                        type: "POST",
+                        data: {
+                            'id' : id
+                        },
+                        success: function (data, status) {
+                            $('#nom-modal').text(data.nom);
+                            $('#appelation-modal').text(data.appellation);
+                            $('#matricule-modal').text(data.matricule);
+                            $('#embauche-modal').text(data.embauche);
+                            $('#permis-modal').text(data.permis);
+                            $('#cin-modal').text(data.cin);
+                            $('#age-modal').text(data.age);
+                            $('#visite-modal').append(data.visite);
+                            $('#anciennete-modal').text(data.anciennete);
+                            if(data.image) $('#image-modal-chauffeur').attr("src","/uploads/chauffeurs/"+data.image);
+                            $('#modal-fiche-chauffeur').modal('show');
+                        },
+                    });
+                    var data = {
+                        'chauffeur_id' : id
+                    }
+
+                    $.ajax({
+                        url : "/profile/load_chauffeur",
+                        type : "POST",
+                        data : data,
+                        success : function(data, status){
+
+                            //voyage
+                            var htmlVoyage = '';
+                            var totalVoyage = 0;
+                            data.ficheVoyage.forEach((item, index) => {
+                                totalVoyage += parseInt(item.voyage_montant);
+                                htmlVoyage += `
+                                    <tr>
+                                        <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                        <td class="client">${ item.client_voyage ? item.client_voyage : '' }</td>
+                                        <td class="ot">${ item.voyage_ot ? item.voyage_ot : '' }</td>
+                                        <td class="date">${ item.voyage_dd ? self.splitDate(item.voyage_dd.date)  : '' }</td>
+                                        <td class="date">${ item.voyage_df ? self.splitDate(item.voyage_df.date) : '' }</td>
+                                        <td class="trajet">${ item.voyage_trajet ? item.voyage_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.voyage_montant ? self.formatCurency(item.voyage_montant) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_voyage_chauffeur").text(self.formatCurency(totalVoyage))
+                            $("#body-voyage-chauffeur").html(htmlVoyage);
+
+                            //carburant
+                            var htmlCarburant = '';
+                            var totalCarburant = 0;
+                            data.ficheCarburant.forEach((item, index) => {
+                                totalCarburant += parseInt(item.carb_montant);
+                                htmlCarburant += `
+                                    <tr>
+                                        <td class="date">${ item.date_carb ? self.splitDate(item.date_carb.date) : '' }</td>
+                                        <td class="station">${ item.carb_station ? item.carb_station  : '' }</td>
+                                        <td class="kilometrage">${ item.carb_kilometrage ? self.formatKilometrage(item.carb_kilometrage) : '' }</td>
+                                        <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                        <td class="client">${ item.carb_client ? item.carb_client : '' }</td>
+                                        <td class="type">${ item.carb_type ? item.carb_type : '' }</td>
+                                        <td class="litrage">${ item.carb_litrage ? self.formatLitrage(item.carb_litrage) : '' }</td>
+                                        <td class="fond">${ item.carb_fond ? self.formatLitrage(item.carb_fond) : '' }</td>
+                                        <td class="trajet">${ item.carb_trajet ? item.carb_trajet : '' }</td>
+                                        <td class="montant-sold">${ item.carb_montant ? self.formatCurency(item.carb_montant) : ''}</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_carburant_chauffeur").text(self.formatCurency(totalCarburant));
+                            $("#body-carburant-chauffeur").html(htmlCarburant);
+
+                            //pneu
+                            var htmlPneu = '';
+                            var totalPneu = 0;
+                            if(data.fichePneu.length > 0){
+                                data.fichePneu.forEach((item, index) => {
+                                    totalPneu += item.pneu_montant != null ? parseInt(item.pneu_montant.replaceAll(' ', '')) : 0;
+                                    htmlPneu += `
+                                        <tr>
+                                            <td class="date">${ item.date_pneu ? self.splitDate(item.date_pneu.date) : '' }</td>
+                                            <td class="kilometrage">${ item.pneu_kilometrage ? self.formatKilometrage(item.pneu_kilometrage) : '' }</td>
+                                            <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                            <td class="num_serie">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="marque">${ item.pneu_marque ? item.pneu_marque : '' }</td>
+                                            <td class="ref">${ item.pneu_position ? item.pneu_position : '' }</td>
+                                            <td class="position">${ item.pneu_serie ? item.pneu_serie : '' }</td>
+                                            <td class="montant-sold">${ item.pneu_montant ? self.formatCurency(item.pneu_montant.replaceAll(' ', '')) : '' }</td>
+                                        </tr>
+                                    `;
+                                })
+                            }
+                            $("#total_montant_pneu_chauffeur").text(self.formatCurency(totalPneu))
+                            $("#body-pneu-chauffeur").html(htmlPneu);
+
+
+                            var htmlInt = '';
+                            var totalInt = 0;
+                            data.fichePiece.forEach((item, index) => {
+                                totalInt += parseInt(item.int_total);
+                                htmlInt += `
+                                    <tr>
+                                        <td class="date">${ item.int_date_fin ? self.splitDate(item.int_date_fin.date) : '' }</td>
+                                        <td class="date">${ item.int_date_debut ? self.splitDate(item.int_date_debut.date) : '' }</td>
+                                        <td class="chauffeur">${ item.vehicule_voyage ? item.vehicule_voyage : '' }</td>
+                                        <td class="km">${ item.int_km ? item.int_km : '' }</td>
+                                        <td class="ot">${ item.int_ot ? item.int_ot : '' }</td>
+                                        <td class="motif">${ item.int_motif ? item.int_motif : '' }</td>
+                                        <td class="pieces">
+                                            <span data-intervention="`+ item.intervention_id +`" class="npiece" style="${ item.nbr_piece_intervention ? 'display : block;' : 'display:none;' }">
+                                                ${ item.nbr_piece_intervention ? item.nbr_piece_intervention : 0 } pièces<i class="fa fa-detail"></i>
+                                            </span>
+                                        </td>
+                                        <td class="intervenant">${ item.intervenant ? item.intervenant : '' }</td>
+                                        <td class="commentaire">${ item.int_conmmentaire ? item.int_conmmentaire: '' }</td>
+                                        <td class="montant-sold">${ item.int_total ? self.formatCurency(item.int_total) : '' }</td>
+                                    </tr>
+                                `;
+                            })
+                            $("#total_montant_intervenation_chauffeur").text(self.formatCurency(totalInt))
+                            $("#body-entretien-chauffeur").html(htmlInt);
+                        },
+                        complete : function(data){
+                            //$('#modal-fiche-vehicule').modal('show');
+                        }
+                    });
+                },
+            }
+        })
+    </script>
+{% endblock %}

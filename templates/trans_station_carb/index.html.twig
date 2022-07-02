@@ -1,0 +1,37 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}TransStationCarb index{% endblock %}
+
+{% block body %}
+    <h1>Station Carburant</h1>
+    <a href="{{ path('trans_station_carb_new') }}" class="btn-primary btn-sm">Ajouter</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom</th>
+                <th>Rang</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for trans_station_carb in trans_station_carbs %}
+            <tr>
+                <td>{{ trans_station_carb.id }}</td>
+                <td>{{ trans_station_carb.nom }}</td>
+                <td>{{ trans_station_carb.rang }}</td>
+                <td>
+                    <a href="{{ path('trans_station_carb_show', {'id': trans_station_carb.id}) }}" class="btn btn-xs btn-info">Ouvrir</a>
+                    <a href="{{ path('trans_station_carb_edit', {'id': trans_station_carb.id}) }}" class="btn btn-xs btn-success">Modifier</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    
+{% endblock %}

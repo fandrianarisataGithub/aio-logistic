@@ -1,0 +1,140 @@
+.f_graph {
+    width: 100%;
+}
+
+.canvas-con {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 365px;
+    position: relative;
+    flex-direction: column;
+}
+
+.canvas-con>div {
+    margin: 50px;
+}
+
+.canvas-con>div:first-child {
+    margin-bottom: 0;
+}
+
+p.text_center_chart {
+    position: absolute;
+    margin-left: 75px;
+    margin-top: 75px;
+    color: #fff;
+    z-index: 0;
+    background: rgba(61, 60, 60, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 100px;
+    font-size: 13px;
+    min-height: 100px;
+    border-radius: 50%;
+}
+
+.canvas-con-inner {
+    height: 100%;
+}
+
+.canvas-con-inner,
+.legend-con {
+    display: inline-block;
+}
+
+.legend-con {
+    font-family: Roboto;
+    display: inline-block;
+    padding-left: 25px;
+}
+
+.legend-con ul {
+    list-style: none;
+}
+
+.legend-con li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.legend-con li span {
+    display: inline-block;
+}
+
+.legend-con li span.chart-legend {
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+}
+
+ul.ul_legend li span {
+    color: #fff;
+}
+
+ul.ul_legend li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding-right: 5px;
+    transition: all 1s ease-in-out;
+}
+
+ul.ul_legend li a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding-right: 5px;
+    transition: all 1s ease-in-out;
+    border-radius: 15px;
+}
+
+ul.ul_legend li a:hover,
+ul.ul_legend li a:focus {
+    background: #4a4949;
+    border-radius: 15px;
+    transition: all 1s ease-in-out;
+}
+
+.div_icone {
+    display: flex;
+    background: #4a4949;
+    width: 50px;
+    height: 50px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+}
+
+.div_icone img {
+    width: 30px;
+    height: 35px;
+}
+
+.div_label {
+    margin-left: 15px;
+    width: 120px;
+    padding: 0px 5px;
+}
+
+.div_label span {
+    font-size: 12px;
+}
+
+.div_stat .effectif {
+    font-size: 35px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.canvas-con {
+    width: 100%;
+    justify-content: center;
+}
+
+
+/*# sourceMappingURL=style.css.map */

@@ -1,0 +1,11 @@
+$breakpoint-imac21: 'all and (min-width:1920px) and (min-height:1080px)';
+$breakpoint-xxl: 'all and (min-width:1680px)  and (max-width:1919px)';
+$breakpoint-xl: 'all and (max-width:1679px)';
+$breakpoint-lg: 'all and (max-width:1500px)';
+$breakpoint-md: 'all and (max-width:1199px)';
+$breakpoint-sm: 'all and (max-width:810px)';
+$breakpoint-xs: 'all and (max-width:479px)';
+$breakpoint-mobile-pm: 'only screen and (max-width:360px)';
+$breakpoint-sm-h: 'all and (max-height:480px)';
+$breakpoint-ipad-sl: 'only screen and (min-width:1024px) and (max-height:768px)';
+$breakpoint-ipad-sp: 'only screen and (min-width:768px)  and (max-height:1024px)';

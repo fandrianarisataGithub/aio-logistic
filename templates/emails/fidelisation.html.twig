@@ -1,0 +1,10 @@
+
+<h1 style="color:#d29e00;">RAPPORT DE FIDELISATION DE CLIENT</h1>
+<h2>Application <a href="https://dashboardsounds.com">DASHBOARDSOUNDS</a></h2>
+
+<p>
+    Bonjour, <br> <br>
+    Le client <b>{{ custumerName }}</b> fait maintenant partie de la liste des clients <span style="color:#d29e00;"><b>{{ currentFidelisation.getNomAff()|capitalize }}</b></span>. 
+    Ce client sera hébergé dans l'hôtel <b>{{ hotelNom }}</b> pour une durée de <b>{{ visit.getNbrNuitee() }}</b> nuitée{{ visit.getNbrNuitee() > 1 ? 's' : '' }} de <b>{{ visit.getCheckin()|date('d-m-Y') }}</b> jusqu'à <b>{{ visit.getCheckout()|date('d-m-Y') }}</b> avec <b>{{ visit.getNbrChambre() }}</b> chambre{{ visit.getNbrChambre() > 1 ? 's' : '' }}.
+</p>
+

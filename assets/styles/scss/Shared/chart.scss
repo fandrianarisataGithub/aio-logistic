@@ -1,0 +1,138 @@
+.chart-content {
+    background-color: $white;
+    border-radius: 40px;
+    height: auto;
+    padding-top: 10px;
+    margin-top: 40px;
+    &:last-child {
+        margin-bottom: 100px;
+    }
+    .chart-header {
+        width: 95%;
+        margin: 40px auto 40px auto;
+        .label {
+            .icone {
+                width: 50px;
+                height: 50px;
+                border-radius: 9px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                img {
+                    width: 27px;
+                    height: 27px;
+                }
+                &.icone-carb {
+                    background: #E4F0FF;
+                }
+                &.icone-pneu {
+                    background: #FEEFD0;
+                }
+                &.icone-voy img {
+                    width: 100%;
+                    height: auto;
+                }
+            }
+        }
+        @media #{$breakpoint-xl} {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        .part {
+            &:first-child {
+                width: 65%;
+                justify-content: space-between;
+                align-items: center;
+                @media #{$breakpoint-xl} {
+                    width: 100%;
+                }
+                >div {
+                    &:last-child {
+                        >div {
+                            &:first-child {
+                                &:not(.no-margin) {
+                                    margin-right: 20px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            &:last-child {
+                width: 30%;
+                justify-content: space-between;
+                align-items: center;
+                @media #{$breakpoint-xl} {
+                    width: 100%;
+                    margin-top: 50px;
+                }
+            }
+        }
+    }
+    .chart-body {
+        width: 100%;
+        height: 612px !important;
+        padding: 20px;
+        canvas {
+            width: auto;
+            height: 100% !important;
+            @media #{$breakpoint-xl} {
+                width: 100%;
+            }
+            @media all and (max-width:1336px) {
+                width: 100%;
+                height: auto;
+            }
+        }
+    }
+}
+
+.item-pneu {
+    &:first-child {
+        .value {
+            background: #FEEFD0;
+            border: 1px solid #FEB307;
+            color: #FEB307;
+        }
+    }
+    &:nth-child(2) {
+        .value {
+            color: #F8964C;
+            border: 1px solid #F8964C;
+            background: #FFEADA;
+        }
+    }
+    &:last-child {
+        .value {
+            color: #1ECECC;
+            border: 1px solid #1ECECC;
+            background: #E8FBF9;
+        }
+    }
+    &:not(:first-child) {
+        margin-left: 35px;
+    }
+    .value {
+        width: 60px;
+        height: 29px;
+        box-sizing: border-box;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 25px;
+        line-height: 29px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .item-name {
+        font-style: normal;
+        font-weight: bold;
+        font-size: 12.8px;
+        line-height: 15px;
+        /* identical to box height */
+        text-align: center;
+        /* Bleu Gris 1 */
+        color: #445981;
+        margin-top: 5px;
+    }
+}

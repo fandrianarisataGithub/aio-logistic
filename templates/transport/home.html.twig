@@ -1,0 +1,873 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block body %}
+<div id="app">
+    <div class="title-page-trans">
+        <h1 class="fs-primary">Tableau de bord</h1>
+    </div>
+    {# chart voyage #}
+    <div class="chart-content">
+        <div class="chart-header d-flex align-items-center justify-content-between">
+            <div class="part d-flex">
+                <div class="label d-flex align-items-center">
+                    <span class="icone mr-2 icone-voy">
+                        <img src="{{ asset('images/icones_trans/chart/chartVoy.svg') }}" alt="voy">
+                    </span>
+                    <span class="font-title-chart">Voyages</span>
+                </div>
+                <div class="filter-chart d-flex">
+                    <div class="client-tris d-flex align-items-center">
+                        <img width="26px" height="26px" src="{{ asset('images/icones_trans/chart/profile.svg') }}" alt="profile">
+                        <span>
+                            <select class="select-tris-chart selectpicker" 
+                                name="" 
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                                data-dropup-auto="false" data-size="5"
+                                id="select-client-voyage"
+                            >
+                                <option value="tout">Tout</option>
+                                {% for item in clientsVoyages %}
+                                    <option value="{{ item.client }}">{{ item.client }}</option>
+                                {% endfor %}
+                            </select>
+                        </span>
+                    </div>
+                    <div class="tris-annee d-flex  align-items-center">
+                        <img width="26px" height="26px" src="{{ asset('images/icones_trans/calendar.svg') }}" alt="calendar">
+                        <span class="ml-2">
+                            <select 
+                                class="select-tris-chart selectpicker tris-mois" 
+                                name="" 
+                                id="select-month-voyage"
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                            >  
+                            </select>
+                        </span>
+                        <span class="ml-2">
+                            <select 
+                                class="select-tris-chart selectpicker tris-annee" 
+                                name="" 
+                                id="select-year-voyage"
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                            >
+                                {% for item in anneeVoyage %}
+                                    <option value="{{ item.annee }}">{{ item.annee }}</option>
+                                {% endfor %}
+                            </select>
+                        </span>
+                    </div>
+                    <div class="btn_tris">
+                        <button id="filter-voyage" class="btn-filter">Filtrer</button>
+                    </div>
+                </div>
+            </div>
+            <div class="part d-flex">
+                <div class="cat">
+                    <div>
+                        <span id="sumCAVoyage" class="font-title-chart">{{ dataVoyage['totalCaVoyage']|number_format(0, ',', ' ') }}</span>
+                        <span class="unite_ar font-title-chart">Ar</span>
+                    </div>
+                    <div>
+                        <span class="value-title-chart">Chiffre d'affaire total</span>
+                    </div>
+                </div>
+                <div class="cat">
+                    <div>
+                        <span id="sumNbrVoyage" class="font-title-chart">{{ dataVoyage['totalVoyage']|number_format(0, ',', ' ') }}</span>
+                    </div>
+                    <div><span class="value-title-chart">Nombre total de voyage</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="chart-body chart-body-voyage">
+            <canvas id="chartVoyage"></canvas>
+        </div>
+    </div>
+    {# chart carburant #}
+    <div class="chart-content">
+        <div class="chart-header d-flex align-items-center justify-content-between">
+            <div class="part d-flex">
+                <div class="label d-flex align-items-center">
+                    <span class="icone mr-2 icone-carb">
+                        <img src="{{ asset('images/icones_trans/chart/chartCarb.svg') }}" alt="carb">
+                    </span>
+                    <span class="font-title-chart">Carburant</span>
+                </div>
+                <div class="filter-chart d-flex">
+                    <div class="client-tris d-flex align-items-center">
+                        <img width="26px" height="26px" src="{{ asset('images/icones_trans/chart/profile.svg') }}" alt="profile">
+                        <span>
+                            <select class="select-tris-chart selectpicker" 
+                                name="" 
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                                data-dropup-auto="false" data-size="5"
+                                id="select-client-carb"
+                            >
+                                <option value="tout">Tout</option>
+                                {% for item in clientsCarb %}
+                                    <option value="{{ item.client }}">{{ item.client }}</option>
+                                {% endfor %}
+                            </select>
+                        </span>
+                    </div>
+                    <div class="tris-annee d-flex  align-items-center">
+                        <img width="26px" height="26px" src="{{ asset('images/icones_trans/calendar.svg') }}" alt="calendar">
+                        <span class="ml-2">
+                            <select 
+                                class="select-tris-chart selectpicker tris-mois" 
+                                name="" 
+                                id="select-month-carb"
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                            >  
+                            </select>
+                        </span>
+                        <span class="ml-2">
+                            <select 
+                                class="select-tris-chart selectpicker tris-annee" 
+                                name="" 
+                                id="select-year-carb"
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                            >
+                                {% for item in anneeCarb %}
+                                    <option value="{{ item.annee }}">{{ item.annee }}</option>
+                                {% endfor %}
+                            </select>
+                        </span>
+                    </div>
+                    <div class="btn_tris">
+                        <button id="filter-carb" class="btn-filter">Filtrer</button>
+                    </div>
+                </div>
+            </div>
+            <div class="part d-flex">
+                <div class="cat">
+                    <div>
+                        <span id="sumCACArb" class="font-title-chart">{{ dataCarb['caCons']|number_format(0, ',', ' ') }}</span>
+                        <span class="unite_ar font-title-chart">Ar</span>
+                    </div>
+                    <div><span class="value-title-chart">Valeur total carburant consommé</span></div>
+                </div>
+                <div class="cat">
+                    <div>
+                        <span id="sumLitrage" class="font-title-chart">{{ dataCarb['litrageCons']|number_format(0, ',', ' ') }}</span>
+                        <span class="unite_ar font-title-chart">L</span>
+                    </div>
+                    <div><span class="value-title-chart">Total carburant consommé</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="chart-body chart-body-carburant">
+            <canvas id="chartCarburant"></canvas>
+        </div>
+    </div>
+    {# chart pneu #}
+    
+    <div class="chart-content">
+        <div class="chart-header d-flex align-items-center justify-content-between">
+            <div class="part d-flex">
+                <div class="label d-flex align-items-center">
+                    <span class="icone mr-2 icone-pneu">
+                        <img src="{{ asset('images/icones_trans/chart/chartPneu.svg') }}" alt="carb">
+                    </span>
+                    <span class="font-title-chart">Pneus</span>
+                </div>
+                <div class="pneus-list d-flex align-items-center">
+                    <div class="item-pneu d-flex flex-column justify-content-center align-items-center">
+                        <span class="value" id="tracteur_eff">{{ pneuSortie['tracteur']['qte'] }}</span>
+                        <span class="item-name">Tracteur</span>
+                    </div>
+                    <div class="item-pneu d-flex flex-column justify-content-center align-items-center">
+                        <span class="value" id="remorque_eff">{{ pneuSortie['remorque']['qte'] }}</span>
+                        <span class="item-name">Remorque</span>
+                    </div>
+                    <div class="item-pneu d-flex flex-column justify-content-center align-items-center">
+                        <span class="value" id="autre_eff">{{ pneuSortie['autre']['qte'] }}</span>
+                        <span class="item-name">Autre</span>
+                    </div>
+                </div>
+                <div class="tris-filtre d-flex justify-content-end">
+                    <div class="tris-annee d-flex  align-items-center no-margin">
+                        <img width="26px" height="26px" src="{{ asset('images/icones_trans/calendar.svg') }}" alt="calendar">
+                        <span class="ml-2">
+                            <select 
+                                class="select-tris-chart selectpicker tris-mois" 
+                                name="" 
+                                id="select-month-pneu"
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                            >  
+                            </select>
+                        </span>
+                        <span class="ml-2">
+                            <select 
+                                class="select-tris-chart selectpicker tris-annee" 
+                                name="" 
+                                id="select-year-pneu"
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                            >
+                                {% for item in anneePneu %}
+                                    <option value="{{ item['annee'] }}">{{ item['annee'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </span>
+                    </div>
+                    <div class="btn_tris">
+                        <button id="filter-pneu" class="btn-filter">Filtrer</button>
+                    </div>
+                </div>
+            </div>
+            <div class="part d-flex">
+                <div class="cat">
+                    <div>
+                        <span id="sumCAPneu" class="font-title-chart">{{ dataPneu['caCons']|number_format(0, ',', ' ') }}</span>
+                        <span class="unite_ar font-title-chart">Ar</span>
+                    </div>
+                    <div><span class="value-title-chart">Valeur total de pneus sortie</span></div>
+                </div>
+                <div class="cat">
+                    <div>
+                        <span id="sumNbrPneu" class="font-title-chart">{{ dataPneu['nbr']|number_format(0, ',', ' ') }}</span>
+                        <span class="unite_ar font-title-chart">Pneus</span>
+                    </div>
+                    <div><span class="value-title-chart">Total de pneus sortie</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="chart-body chart-body-pneu">
+            <canvas id="chartPneu"></canvas>
+        </div>
+    </div>
+    {# chart pièce #}
+    <div class="chart-content">
+        <div class="chart-header d-flex align-items-center justify-content-between">
+            <div class="part d-flex">
+                <div class="label d-flex align-items-center">
+                    <span class="icone mr-2 icone-carb">
+                        <img src="{{ asset('images/icones_trans/garage.svg') }}" alt="carb">
+                    </span>
+                    <span class="font-title-chart">Intervention</span>
+                </div>
+                <div class="filter-chart d-flex">
+                    <div class="client-tris d-flex align-items-center">
+                        <img width="26px" height="26px" src="{{ asset('images/icones_trans/chart/profile.svg') }}" alt="profile">
+                        <span>
+                            <select class="select-tris-chart selectpicker" 
+                                name="" 
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                                data-dropup-auto="false" data-size="5"
+                                id="select-client-intervention"
+                            >
+                                <option value="tout">Tout</option>
+                                {% for item in clientsIntervention %}
+                                    <option value="{{ item.client }}">{{ item.client }}</option>
+                                {% endfor %}
+                            </select>
+                        </span>
+                    </div>
+                    <div class="tris-annee d-flex  align-items-center">
+                        <img width="26px" height="26px" src="{{ asset('images/icones_trans/calendar.svg') }}" alt="calendar">
+                        <span class="ml-2">
+                            <select 
+                                class="select-tris-chart selectpicker tris-mois" 
+                                name="" 
+                                id="select-month-intervention"
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                            >  
+                            </select>
+                        </span>
+                        <span class="ml-2">
+                            <select 
+                                class="select-tris-chart selectpicker tris-annee" 
+                                name="" 
+                                id="select-year-intervention"
+                                data-show-subtext="true" 
+                                data-live-search="true" 
+                            >
+                                {% for item in anneeIntervention %}
+                                    <option value="{{ item.annee }}">{{ item.annee }}</option>
+                                {% endfor %}
+                            </select>
+                        </span>
+                    </div>
+                    <div class="btn_tris">
+                        <button id="filter-intervention" class="btn-filter">Filtrer</button>
+                    </div>
+                </div>
+            </div>
+            <div class="part d-flex">
+                <div class="cat">
+                    <div>
+                        <span id="sumCAIntervention" class="font-title-chart">{{ dataIntervention['totalCaIntervention']|number_format(0, ',', ' ') }}</span>
+                        <span class="unite_ar font-title-chart">Ar</span>
+                    </div>
+                    <div><span class="value-title-chart">Montant total d'intervention</span></div>
+                </div>
+                <div class="cat">
+                    <div>
+                        <span id="totalIntervention" class="font-title-chart">{{ dataIntervention['totalIntervention']|number_format(0, ',', ' ') }}</span>
+                    </div>
+                    <div><span class="value-title-chart">Nombre total d'intervention</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="chart-body chart-body-intervention">
+            <canvas id="chartIntervention"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            $('.selectpicker').selectpicker('refresh');
+        })
+    </script>
+    <script>
+        var canvasVoyage = document.getElementById('chartVoyage');
+        var canvasIntervention = document.getElementById('chartIntervention');
+        var canvasCarburant = document.getElementById('chartCarburant');
+        var canvasPneu = document.getElementById('chartPneu');
+        var a = moment.locale("fr");
+
+        //var c = moment().format("LLLL"); ça affiche vendredi 28 janvier 2022 11:08
+        months = moment.monthsShort();
+        var monthsLong = moment.months();
+        //console.log(monthsLong)
+        var optionMonth = `<option value="">Choisir le mois</option>`;
+        for(var i=0; i<monthsLong.length; i++){
+            optionMonth+=`
+                <option value="`+ (i + 1) +`">`+ monthsLong[i] +`</option>
+            `
+        }
+        $('.tris-mois').append(optionMonth);
+
+        //alert(NonbreJourMois('08', '2022'));
+        function generateData(canvas, XLabels, label1, label2, data1, data2){ // data1 et 2 sont en format tableau simple data: [100, 96, 84, 76, 69]
+            var ctx = canvas.getContext("2d");
+            var gradientfill_1 = ctx.createLinearGradient(0, 0, 0, 320);
+				gradientfill_1.addColorStop(0, '#3049CE');
+				gradientfill_1.addColorStop(1, 'transparent');
+
+				var gradientfill_2 = ctx.createLinearGradient(0, 0, 0, 320);
+				gradientfill_2.addColorStop(0, '#d29e00');
+				gradientfill_2.addColorStop(1, 'transparent');
+            return {
+                labels: XLabels, // x axis
+                datasets: [
+                    {
+                        label: label1,
+                        yAxisID: label1,
+                        data: data1,
+                        fill: true,                     
+                        borderColor: "#3049CE",
+                        backgroundColor: gradientfill_1,
+                        /* insertion des données sur l'axe (oy) */
+                        
+                        // qui est un tableau simple
+                        /* / insertion des données sur l'axe (oy) */
+                        pointStyle: 'circle',
+                        pointBackgroundColor: "transparent",
+                        pointBorderWidth: '2',
+                        radius: '5',
+                        hoverRadius: '5',
+                        borderWidth: 2
+                    }, 
+                    {
+                        label: label2,
+                        yAxisID: label2,
+                        data: data2,
+                        fill: true,
+                        pointStyle: 'circle',
+                        borderColor: "#d29e00",
+                        backgroundColor: gradientfill_2,
+                        /* insertion des données sur l'axe (oy) */
+                       
+                        // qui est un tableau simple
+                        /* / insertion des données sur l'axe (oy) */
+                        pointBackgroundColor: "transparent",
+                        pointBorderWidth: '2',
+                        radius: '5',
+                        hoverRadius: '5',
+                        borderWidth: 2
+                    }
+                ]
+            }
+        }
+
+        function generateChartOption(label1, label2, data1, data2, data2Unite){ // labels1 et 2 sont des string de data2Unite koa
+            // les max
+           var maxL1 = Math.max(...data1);
+           var maxL2 = Math.max(...data2);
+            return {
+                responsive: false,
+                legend:{
+                    position : 'bottom',
+                    align : 'center',
+                    labels : {
+                        usePointStyle: true
+                    }
+                },
+                scales: {
+                    yAxes: [    
+                        {
+                            id: label1,
+                            type: 'linear',
+                            position: 'left',
+                            ticks: {
+                                max: maxL1 + parseInt(maxL1 / 4),
+                                min: 0,
+                                stepSize: parseInt(maxL1 / 4),
+                                callback: function (value) {
+                                    var test = new Intl.NumberFormat();
+                                    var val = test.format(value);
+                                    return "Ar " + val
+                                }
+                            }
+                        }, 
+                        {
+                            id: label2,
+                            type: 'linear',
+                            position: 'right',
+                            ticks: {
+                                max: maxL2 + parseInt(maxL2 / 4),
+                                min: 0,
+                                stepSize: parseInt(maxL2 / 4),
+                                callback: function (value) {
+                                    var test = new Intl.NumberFormat();
+                                    var val = test.format(value);
+                                    return val +" " + data2Unite
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+
+        function drawChart(canvas, XLabels, label1, label2, data1, data2, data2Unite){
+            return new Chart(canvas, {
+                type : 'line',
+                data : generateData(canvas, XLabels, label1, label2, data1, data2),
+                options : generateChartOption(label1, label2, data1, data2, data2Unite)
+            })
+        }
+
+        // tracer chartVoyage
+        var dataCaVoyage = {{ dataVoyage['dataChart']['montant']|json_encode() }};
+        var dataNbrVoyage = {{ dataVoyage['dataChart']['nbrVoyage']|json_encode() }};
+        let chartVoyage = drawChart(
+            canvasVoyage, 
+            months,
+            'Chiffre d affaire', 'Voyage',
+            dataCaVoyage,
+            dataNbrVoyage,
+            'Voyages'
+        );
+
+        // tracer chartIntervention
+        var dataCaIntervention = {{ dataIntervention['dataChart']['montant']|json_encode() }};
+        var dataNbrIntervention = {{ dataIntervention['dataChart']['nbrIntervention']|json_encode() }};
+        let chartIntervention = drawChart(
+            canvasIntervention, 
+            months,
+            'Chiffre d affaire', 'Intervention',
+            dataCaIntervention,
+            dataNbrIntervention,
+            'Interventions'
+        );
+
+        // tracer chartCarb
+        var dataLitrageGasCarb = {{ dataCarb['dataChart']['litrageGas']|json_encode() }};
+        var dataMontantCarb = {{ dataCarb['dataChart']['montant']|json_encode() }};
+       
+        let chartCarburant = drawChart(
+            canvasCarburant, 
+            months,
+            'Chiffre d affaire', 'Litrage',
+            dataMontantCarb, // ca
+            dataLitrageGasCarb, // litage
+            'L'
+        );
+
+        // trace chartPneu
+        var dataMontantPneu = {{ dataPneu['dataChart']['montant']|json_encode() }}
+        var dataNbrPneu = {{ dataPneu['dataChart']['nbr']|json_encode() }}
+        let chartPneu = drawChart(
+            canvasPneu,
+            months, 
+            'Chiffre d affaire', 'Pneus', 
+            dataMontantPneu, 
+            dataNbrPneu,
+            'Pneus'
+        );
+
+        /* pour somme simple array*/
+
+        function add(accumulator, a) {
+            return accumulator + a;
+        }
+        function sumArray(arr){
+            var test = new Intl.NumberFormat();
+            var sum = arr.reduce(add, 0); // with initial value to avoid when the array is empty
+            return test.format(sum)
+        }
+
+        /* / pour somme simple array*/
+
+        // tester si un tableau objet est iterable
+
+        function isIterable (value) {
+            return Symbol.iterator in Object(value);
+        }
+
+        function loadChartCarb(url, data, XLabels){
+            var data = data || {};
+            canvasCarburant = document.getElementById('chartCarburant');
+            $.ajax({
+                url : url,
+                type : 'GET',
+                data : data,
+                beforeSend : function(){
+                    $('#filter-carb').text('...').css('align-items', 'center');
+                },
+                success : function(response){
+                    if(
+                        isIterable(response.dataChart.montant) && 
+                        isIterable(response.dataChart.litrageGas)
+                    ){
+                        chartCarburant = drawChart(
+                            canvasCarburant, 
+                            XLabels,
+                            'Chiffre d affaire', 'Litrage',
+                            response.dataChart.montant, // ca
+                            response.dataChart.litrageGas, // litage
+                            'L'
+                        );
+                        chartCarburant.update();
+                        $('#sumCACArb').text(sumArray(response.dataChart.montant));
+                        $('#sumLitrage').text(sumArray(response.dataChart.litrageGas));
+                    }else{
+                        $('#sumCACArb').text("Aucune donnée");
+                        $('#sumLitrage').text("aucune donnée");
+                    }
+                },
+                complete : function(){
+                    $('#filter-carb').text('Filter');
+                },
+                error : function (err){
+                    console.error('load data chart');
+                }
+            })
+            return chartCarburant;
+        }
+
+        function loadChartVoyage(url, data, XLabels){
+            var data = data || {};
+            console.log(XLabels)
+            canvasVoyage = document.getElementById('chartVoyage');
+            $.ajax({
+                url : url,
+                type : 'GET',
+                data : data,
+                beforeSend : function(){
+                    $('#filter-voyage').text('...').css('align-items', 'center');
+                    $('#sumCAVoyage').text("...");
+                        $('#sumNbrVoyage').text("...");
+                },
+                success : function(response){
+                    if(
+                        isIterable(response.dataChart.montant) && 
+                        isIterable(response.dataChart.nbrVoyage)
+                    ){
+                        chartVoyage = drawChart(
+                            canvasVoyage, 
+                            XLabels,
+                            'Chiffre d affaire', 'Voyage',
+                            response.dataChart.montant, // ca
+                            response.dataChart.nbrVoyage, // litage
+                            'Voyages'
+                        );
+                        chartVoyage.update();
+                        $('#sumCAVoyage').text(sumArray(response.dataChart.montant));
+                        $('#sumNbrVoyage').text(sumArray(response.dataChart.nbrVoyage));
+                    }else{
+                        $('#sumCAVoyage').text("Aucune donnée");
+                        $('#sumNbrVoyage').text("aucune donnée");
+                    }
+                },
+                complete : function(){
+                    $('#filter-voyage').text('Filter');
+                },
+                error : function (err){
+                    console.error('load data chart voyage');
+                }
+            })
+            return chartVoyage;
+        }
+        function loadChartIntervention(url, data, XLabels){
+            var data = data || {};
+            console.log(XLabels)
+            canvasIntervention = document.getElementById('chartIntervention');
+            $.ajax({
+                url : url,
+                type : 'GET',
+                data : data,
+                beforeSend : function(){
+                    $('#filter-intervention').text('...').css('align-items', 'center');
+                    $('#sumCAIntervention').text("...");
+                    $('#totalIntervention').text("...");
+                },
+                success : function(response){
+                    if(
+                        isIterable(response.dataChart.montant) && 
+                        isIterable(response.dataChart.nbrIntervention)
+                    ){
+                        chartIntervention = drawChart(
+                            canvasIntervention, 
+                            XLabels,
+                            'Chiffre d affaire', 'Intervention',
+                            response.dataChart.montant, // ca
+                            response.dataChart.nbrIntervention, // litage
+                            'Interventions'
+                        );
+                        chartIntervention.update();
+                        $('#sumCAIntervention').text(sumArray(response.dataChart.montant));
+                        $('#totalIntervention').text(sumArray(response.dataChart.nbrIntervention));
+                    }else{
+                        $('#sumCAIntervention').text("Aucune donnée");
+                        $('#totalIntervention').text("aucune donnée");
+                    }
+                },
+                complete : function(){
+                    $('#filter-intervention').text('Filtrer').css('align-items', 'center');
+                },
+                error : function (err){
+                    console.error('load data chart Intervention');
+                }
+            })
+            return chartIntervention;
+        }
+
+        function loadChartPneu(url, data, XLabels){
+            var data = data || {};
+            canvasPneu = document.getElementById('chartPneu');
+            $.ajax({
+                url : url,
+                type : 'GET',
+                data : data,
+                beforeSend : function(){
+                    $('#filter-pneu').text('...').css('align-items', 'center');
+                    $('#sumCAPneu').text("...");
+                        $('#sumNbrPneu').text("...");
+                },
+                success : function(response){
+                    if(
+                        isIterable(response.dataChart.montant) && 
+                        isIterable(response.dataChart.nbr)
+                    ){
+                        chartPneu = drawChart(
+                            canvasPneu,
+                            XLabels, 
+                            'Chiffre d affaire', 'Pneus',
+                            response.dataChart.montant, // ca
+                            response.dataChart.nbr, // litage
+                            'Pneus'
+                        );
+                        chartPneu.update();
+                        $('#sumCAPneu').text(sumArray(response.dataChart.montant));
+                        $('#sumNbrPneu').text(sumArray(response.dataChart.nbr));
+                    }else{
+                        $('#sumCAPneu').text("Aucune donnée");
+                        $('#sumNbrPneu').text("aucune donnée");
+                    }
+                },
+                complete : function(){
+                    $('#filter-pneu').text('Filter');
+                },
+                error : function (err){
+                    console.error('load data chart pneu');
+                }
+            })
+            return chartPneu;
+        }
+
+        $("#filter-carb").click(function(ev){
+            ev.preventDefault()
+            $("canvas#chartCarburant").remove();
+            $("div.chart-body-carburant").append('<canvas id="chartCarburant"></canvas>');
+            var anneeCarb = $("#select-year-carb").val()
+            var clientCarb = $("#select-client-carb").val()
+            var data = {
+                moisCarb : null,
+                anneeCarb : anneeCarb,
+                clientCarb : clientCarb
+            }
+            if($('#select-month-carb').val() != ''){
+                data = {
+                    moisCarb : $('#select-month-carb').val(),
+                    anneeCarb : anneeCarb,
+                    clientCarb : clientCarb
+                }
+            }
+            setTimeout(function(){
+                if(data.moisCarb == null){
+                    //alert('tsisy')
+                    chartCarburant = loadChartCarb('/profile/load-dataChart-carb', data, months);
+                }else{
+                    chartCarburant = loadChartCarb('/profile/load-dataChart-carb', data, daysByYearAndMonth(data.moisCarb, anneeCarb));
+                }
+            }, 1000)
+        })
+
+        function daysByYearAndMonth(mois, annee){
+            var nbrJrs = new Date(annee,mois,0).getDate();
+            var arrayDays = [];
+            for(var i = 1; i<= nbrJrs; i++ ){
+                arrayDays.push(i);
+            }
+            return arrayDays;
+        }
+        //console.log(daysByYearAndMonth(2, 2000));
+        //var nbrJrs = new Date(2022,8,0).getDate(); // nbr du jour du mois de fev new Date(2022,8,0).getDate() // ici c'e'st aout
+        
+        $("#filter-voyage").click(function(ev){
+            ev.preventDefault()
+            $("canvas#chartVoyage").remove();
+            $("div.chart-body-voyage").append('<canvas id="chartVoyage"></canvas>');
+            var anneeVoyage = $("#select-year-voyage").val()
+            var clientVoyage = $("#select-client-voyage").val()
+            var data = {
+                anneeVoyage : anneeVoyage,
+                clientVoyage : clientVoyage
+            }
+            if($('#select-month-voyage').val() != ''){
+                data = {
+                    moisVoyage : $('#select-month-voyage').val(),
+                    anneeVoyage : anneeVoyage,
+                    clientVoyage : clientVoyage
+                }
+            }
+            setTimeout(function(){
+                if(data.moisVoyage == null){
+                    //alert('tsisy')
+                    chartVoyage = loadChartVoyage('/profile/load-dataChart-voyage', data, months);
+                }else{
+                    chartVoyage = loadChartVoyage('/profile/load-dataChart-voyage', data, daysByYearAndMonth(data.moisVoyage, anneeVoyage));
+                }
+            }, 1000)
+        })
+
+        $("#filter-intervention").click(function(ev){
+            ev.preventDefault()
+            $("canvas#chartIntervention").remove();
+            $("div.chart-body-intervention").append('<canvas id="chartIntervention"></canvas>');
+            var anneeIntervention = $("#select-year-intervention").val()
+            var clientIntervention = $("#select-client-intervention").val()
+            var data = {
+                anneeIntervention : anneeIntervention,
+                clientIntervention : clientIntervention
+            }
+            if($('#select-month-intervention').val() != ''){
+                data = {
+                    moisIntervention : $('#select-month-intervention').val(),
+                    anneeIntervention : anneeIntervention,
+                    clientIntervention : clientIntervention
+                }
+            }
+            setTimeout(function(){
+                if(data.moisIntervention == null){
+                    //alert('tsisy')
+                    chartIntervention = loadChartIntervention('/profile/load-dataChart-intervention', data, months);
+                }else{
+                    chartIntervention = loadChartIntervention('/profile/load-dataChart-intervention', data, daysByYearAndMonth(data.moisIntervention, anneeIntervention));
+                }
+            }, 1000)
+        })
+
+        $("#filter-pneu").click(function(ev){
+            ev.preventDefault()
+            $("canvas#chartPneu").remove();
+            $("div.chart-body-pneu").append('<canvas id="chartPneu"></canvas>');
+            var anneePneu = $("#select-year-pneu").val()
+            var data = {
+                anneePneu : anneePneu,
+            }
+            if($('#select-month-pneu').val() != ''){
+                data = {
+                    moisPneu : $('#select-month-pneu').val(),
+                    anneePneu : anneePneu,
+                }
+            }
+            //console.log(data);
+            setTimeout(function(){
+                if(data.moisPneu == null){
+                    
+                    chartPneu = loadChartPneu('/profile/load-dataChart-pneu', data, months);
+                    loadListePneu($("#select-year-pneu").val(), null);
+                }else{
+                    loadListePneu($("#select-year-pneu").val(), data.moisPneu);
+                    chartPneu = loadChartPneu('/profile/load-dataChart-pneu', data, daysByYearAndMonth(data.moisPneu, anneePneu));
+                }
+            }, 1000)
+        })
+
+        function loadListePneu(annee, mois = null){
+            
+            $.ajax({
+                url : '/profile/loadListPneu-historique',
+                type : 'GET',
+                data : {
+                    'annee' : annee,
+                    'mois' : mois
+                },
+                beforeSend : function(){
+                    $("#tracteur_eff").text("...");
+                    $("#remorque_eff").text("...");
+                    $("#autre_eff").text("...");
+                },
+                success : function(response){
+                    //console.log(response);
+                    var eff = {
+                        'tracteur' : 0,
+                        'remorque' : 0,
+                        'autre' : 0
+                    }
+                    for(var i=0; i< response.length; i++){
+                        if(response[i].type_pneu == 'autre'){
+                            eff.autre = response[i].total_par_qte
+                        }
+                        if(response[i].type_pneu == 'remorque'){
+                            eff.remorque = response[i].total_par_qte
+                        }
+                        if(response[i].type_pneu == 'tracteur'){
+                            eff.tracteur = response[i].total_par_qte
+                        }
+                    }
+                    $("#tracteur_eff").text(eff.tracteur);
+                    $("#remorque_eff").text(eff.remorque);
+                    $("#autre_eff").text(eff.autre);
+                },
+                complete : function(){
+                    $('#filter-pneu').text('Filter');
+                },
+                error : function (err){
+                    console.error('load data chart liste pneu');
+                }
+            })
+        }
+
+
+    </script>
+   
+{% endblock %}

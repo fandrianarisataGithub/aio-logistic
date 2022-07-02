@@ -1,0 +1,66 @@
+.badge {
+    background-color: $white;
+    width: 270px;
+    height: 173px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-left: 18px;
+    margin-top: 20px;
+    box-shadow: 0px 0px 3px rgba(200, 200, 200, 0.5);
+    .badge-description {
+        align-items: center;
+        height: 60px;
+        margin-top: 22px;
+        .icone {
+            width: 50px;
+            height: 50px;
+            border-radius: 9px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            &.icone-carb {
+                background-color: $lightBlue;
+            }
+            &.icone-pneu-orange {
+                background-color: $lightOrange;
+            }
+            &.icone-pneu-rouge_orange {
+                background-color: #FFEADA;
+            }
+            &.icone-pneu-green {
+                background-color: $lightGreen;
+            }
+            img {
+                width: 27px;
+                height: 27px;
+                &.img-carburant {
+                    width: 18px;
+                    height: 26.8px;
+                }
+            }
+        }
+        .badge-title h3 {
+            font-weight: bold;
+            font-size: 25px;
+            line-height: 21px;
+            /* Bleu Gris 1 */
+            color: $blueGrey;
+            margin-left: 8px;
+            text-align: start;
+        }
+    }
+    .badge-value {
+        margin-bottom: 22px;
+        h3 {
+            font-weight: bold;
+            font-size: 25px;
+            line-height: 21px;
+            /* Bleu Gris 1 */
+            color: $blueGrey;
+            margin-left: 8px;
+            text-align: start;
+        }
+    }
+}

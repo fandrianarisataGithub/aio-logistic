@@ -1,0 +1,32 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}TranPositionPneu{% endblock %}
+
+{% block body %}
+    <h1>Position pneu</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ tran_position_pneu.id }}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ tran_position_pneu.nom }}</td>
+            </tr>
+            <tr>
+                <th>Rang</th>
+                <td>{{ tran_position_pneu.rang }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('tran_position_pneu_index') }}" class="btn btn-primary btn-xs">Revenir à la liste</a>
+
+    <div class="d-flex my-4">
+        <a href="{{ path('tran_position_pneu_edit', {'id': tran_position_pneu.id}) }}" class="btn btn-xs btn-success mr-2">Modifier</a>
+
+        {{ include('tran_position_pneu/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

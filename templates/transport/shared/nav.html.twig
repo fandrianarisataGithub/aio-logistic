@@ -1,0 +1,82 @@
+<div id="nav">
+	<div class="toggle-nav" id="toggle-nav">
+		<button class="hide">
+			<span>MENU</span>
+		</button>
+	</div>
+	<div class="nav-scrollable">
+		<div class="head-nav fc-white">
+			<h2 class="fs-16 fw-400">
+				LOGO
+			</h2>
+			<div @click="toParametre" class="nom link-param">
+				<p>{{ app.user.nom| capitalize }}</p>
+			</div>
+		</div>
+		<div class="nav-links">
+			<ul>
+				<li><a href="{{ path('transport_home') }}"><span class="icon-link dashboard"><img width="20px" height="20px"src="{{ asset('images/icones_trans/dash.svg') }}" alt="dashboard"></span><span class="fs-white fw-400 fs-16">Home</span></a></li>
+				<li><a href="{{ path('transport_voyage') }}"><span class="icon-link"><img width="20px" height="20px"src="{{ asset('images/icones_trans/voyage.svg') }}" alt="dashboard"></span><span class="fs-white fw-400 fs-16">Voyages</span></a></li>
+				<li><a href="{{ path('transport_carburant') }}"><span class="icon-link"><img width="20px" height="20px"src="{{ asset('images/icones_trans/carburant.svg') }}" alt="dashboard"></span><span class="fs-white fw-400 fs-16">Carburant</span></a></li>
+				<li><a href="{{ path('transport_pneus') }}"><span class="icon-link"><img width="20px" height="20px"src="{{ asset('images/icones_trans/pneu.svg') }}" alt="dashboard"></span><span class="fs-white fw-400 fs-16">Pneus</span></a></li>
+				<li><a href="{{ path('transport_vehicule') }}"><span class="icon-link"><img width="20px" height="20px"src="{{ asset('images/icones_trans/vehicule.svg') }}" alt="dashboard"></span><span class="fs-white fw-400 fs-16">Véhicule</span></a></li>
+				<li><a href="{{ path('transport_chauffeur') }}"><span class="icon-link icone-chauffeur"><img width="20px" height="20px"src="{{ asset('images/icones_trans/chauffeur.svg') }}" alt="dashboard"></span><span class="fs-white fw-400 fs-16">Chauffeur</span></a></li>
+				<li class="li-with-drop">
+					<a @click="drop" href="#" class="dropdown">
+						<span class="icon-link"><img width="20px" height="20px"src="{{ asset('images/icones_trans/garage.svg') }}" alt="dashboard"></span>
+						<span class="fs-white fw-400 fs-16">Garage</span>
+						<span class="fa fa-angle-down"></span>
+					</a>
+					<div v-if="isDropped" class="element-dropped">
+						<ul>
+							<li>
+								<a href="{{ path('transport_garage_entree_piece') }}">Entrées pièces</a>
+							</li>
+							<li>
+								<a href="{{ path('transport_garage_sortie_piece') }}">Sorties pièces</a>
+							</li>
+							<li>
+								<a href="{{ path('transport_garage_stock_piece') }}">Stock</a>
+							</li>
+						</ul>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<div class="nav-footer">
+			<ul>
+				<li>
+					<a href="{{ path('transport_parametre') }}">
+						<span class="icon-link">
+							<img width="20px" height="20px"src="{{ asset('images/icones_trans/setting_shadow.svg') }}" alt="dashboard">
+						</span>
+						<span class="fw-400 fs-16 opaci">Paramètre</span>
+					</a>
+				</li>
+				<li>
+					<a href="{{ path('importVehicule') }}">
+						<span class="icon-link"
+							style="
+								display: flex;
+								justify-content: flex-start;
+								align-items: center;
+							"
+						>
+							<span class="fa fa-refresh fs-20"></span>
+						</span>
+						<span class="fw-400 fs-16">Donnée de base</span>
+					</a>
+				</li>
+				<li>
+					<a href="{{ path('app_logout') }}">
+						<span class="icon-link">
+							<img width="20px" height="20px"src="{{ asset('images/icones_trans/logout.svg') }}" alt="dashboard">
+						</span>
+						<span class="fw-400 fs-16">Se déconnecter</span>
+					</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+

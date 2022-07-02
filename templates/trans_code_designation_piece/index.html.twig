@@ -1,0 +1,35 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}TransCodeDesignationPiece index{% endblock %}
+
+{% block body %}
+    <h1>Liste des codes-designations</h1>
+    <a href="{{ path('trans_code_designation_piece_new') }}" class="btn-primary btn-sm">Ajouter</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Code</th>
+                <th>Designation</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for trans_code_designation_piece in trans_code_designation_pieces %}
+            <tr>
+                <td>{{ trans_code_designation_piece.id }}</td>
+                <td>{{ trans_code_designation_piece.code }}</td>
+                <td>{{ trans_code_designation_piece.designation }}</td>
+                <td>
+                    <a href="{{ path('trans_code_designation_piece_show', {'id': trans_code_designation_piece.id}) }}" class="btn btn-info btn-xs">Ouvrir</a>
+                    <a href="{{ path('trans_code_designation_piece_edit', {'id': trans_code_designation_piece.id}) }}" class="btn btn-xs btn-success">Modifier</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

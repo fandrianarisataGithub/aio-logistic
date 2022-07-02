@@ -1,0 +1,118 @@
+{% extends "base.html.twig" %}
+{% block title %}
+	Importation des données
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('css/dashboard.css')}}">
+{% endblock %}
+
+{% block body %}
+
+	<section id="contents" class="content_tropical">
+		<!-- entete content -->
+		{% include "nav2.html.twig" %}
+		<!-- / entete content -->
+		<!-- contenue  -->
+			<div id="hrs_content"> <div>
+				<div class="col-lg-12 col-md-12 col-sm-12 col-sm-12 col-xs-12">
+					<section class="section_part" id="section_part_top">
+						<div class="sous_titre sous_titre_tw">
+							<h3>Importations des données</h3>
+						</div>
+					</section>
+				</div>
+                {% if tri == false %}
+					<div class="col-lg-4 col-md-6 col-sm-12" id="block_group_form_import_tw_page">
+						<div class="div__form_upload_excel_page import_trop_page">
+							{% if error_import is not defined %}
+								<h3>Liste des clients</h3>
+								<h2 class="maj-data">(Mise à jour le <span>{{ dateMaj.getMajDataTrop()|date('d-m-Y') }}</span>)</h2>
+							{% else %}
+								<h3 class="bg-danger" style="padding:5px;color:#000 !important;font-size:small;">Il y a une erreur de date à la ligne
+									{{ error_import + 2 }}
+									du fichier importer
+								</h3>
+							{% endif %}
+
+
+
+							{% if message is defined %}
+								<div class="message_import bg-danger">
+									<p>
+										{{ message | raw }}
+									</p>
+								</div>
+							{% endif %}
+							{{ form_start(form_add, {
+																'attr' : {
+																	'id' : 'form_import_excel'
+																}
+															}) }}
+							{{ form_row(form_add.fichier) }}
+							<input type="submit" value="Importer" class="btn btn-default btn-sm">
+							{{ form_end(form_add) }}
+						</div>
+					</div>
+				{% endif %}
+
+				{% if tri == false %}
+					<div class="col-lg-4 col-md-6 col-sm-12" id="block_group_form_import_tw_page">
+						<div class="div__form_upload_excel_page import_trop_page">
+							{% if num_error_import_detail is not defined %}
+								<h3>Liste des PF Détaillés</h3>
+								<h2 class="maj-data">(Mise à jour le <span>{{ dateMaj.getMajDataDetail()|date('d-m-Y') }}</span>)</h2>
+							{% else %}
+								<h3 class="bg-danger" style="padding:5px;color:#000 !important;font-size:small;">Il y a une erreur à la ligne
+									{{ num_error_import_detail - 2 }}
+									du fichier importé
+								</h3>
+							{% endif %}
+
+							{% if message_detail is defined %}
+								<div class="message_import bg-danger">
+									<p>
+										{{ message_detail | raw }}
+									</p>
+								</div>
+							{% endif %}
+							{{ form_start(form_add_Details_Pf, {
+																'attr' : {
+																	'id' : 'form_import_excel_pf_detail'
+																}
+															}) }}
+							{{ form_row(form_add_Details_Pf.fichier) }}
+							<input type="submit" value="Importer" class="btn btn-default btn-sm">
+							{{ form_end(form_add_Details_Pf) }}
+						</div>
+					</div>
+				{% endif %}
+				{% if tri == false %}
+					<div class="col-lg-4 col-md-6 col-sm-12" id="block_group_form_import_tw_page">
+						<div class="div__form_upload_excel_page import_trop_page">
+							{% if num_error_import_tres is not defined %}
+								<h3>Données de trésorerie</h3>
+								<h2 class="maj-data">(Mise à jour le <span>{{ dateMaj.getMajDataTres()|date('d-m-Y') }}</span>)</h2>
+							{% else %}
+								<h3 class="bg-danger" style="padding:5px;color:#000 !important;font-size:small;">Il y a une erreur à la ligne
+									{{ num_error_import_tres - 2 }}
+									du fichier importer
+								</h3>
+							{% endif %}
+							{{ form_start(form_tresorerie, {
+																'attr' : {
+																	'id' : 'form_import_excel_pf_detail'
+																}
+															}) }}
+							{{ form_row(form_tresorerie.fichier) }}
+							<input type="submit" value="Importer" class="btn btn-default btn-sm">
+							{{ form_end(form_tresorerie) }}
+						</div>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+		<!-- / contenue  -->
+	</section>
+{% endblock %}
+

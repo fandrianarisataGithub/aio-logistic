@@ -1,0 +1,11 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}New TransTrajetVoyage{% endblock %}
+
+{% block body %}
+    <h1>Ajouter un nouveau trajet voyage</h1>
+
+    {{ include('trans_trajet_voyage/_form.html.twig') }}
+
+    <a href="{{ path('trans_trajet_voyage_index') }}" class="btn btn-xs btn-primary mt-2">Revenir à la liste</a>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Edit TransMarquePneu{% endblock %}
+
+{% block body %}
+    <h1>Modifier la marque pneu</h1>
+
+    {{ include('trans_marque_pneu/_form.html.twig', {'button_label': 'Modifier'}) }}
+
+    <div class="d-flex my-4">
+        <a href="{{ path('trans_marque_pneu_index') }}" class="btn btn-primary btn-xs mr-2">Revenir à la liste</a>
+
+        {{ include('trans_marque_pneu/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

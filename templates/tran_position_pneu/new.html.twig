@@ -1,0 +1,11 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}New TranPositionPneu{% endblock %}
+
+{% block body %}
+    <h1>Ajouter un nouveau position pneu</h1>
+
+    {{ include('tran_position_pneu/_form.html.twig') }}
+
+    <a href="{{ path('tran_position_pneu_index') }}" class="btn btn-primary btn-xs">Revenir à la liste</a>
+{% endblock %}

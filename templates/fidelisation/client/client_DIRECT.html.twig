@@ -1,0 +1,452 @@
+{% extends "base.html.twig" %}
+{% block title %}
+    CLIENT-DIRECT
+{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css')}}">
+    <link rel="stylesheet" href="{{ asset('css/style_chart_rounded.css') }}">
+     <style>
+        .side-nav{
+            width : 100px !important;
+        }
+        #contents{
+            margin-left : 100px !important;
+        }
+        #aside1 ul li.logo_active_fidelisation{
+            background-color: #555555;
+        } 
+        #aside1 ul li.logo_active {
+            background-color: transparent;
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    <section
+        id="contents" class="container-fluid">
+        <!-- entete content -->
+        {% include "nav2.html.twig" %}
+        <!-- / entete content -->
+        <div id="hrs_content" class="fidelisation">
+            <header>
+                <a class="f_titre with_retour" href="{{ path('fidelisation_home', {'pseudo_hotel' : hotel}) }}">
+                    <div class="icone_home">
+                        <img width="30px" src="{{ asset('images/fidelisation/home_icone.png') }}" alt="home_icone">
+                    </div>
+                    <div class="retour">
+                        
+                            <span>Retour à l'acceuil</span>
+                       
+                    </div>
+                </a>
+                {% include "profile_user_fidelisation.html.twig" %}
+            </header>
+            {# liste fidel #}
+            <div class="row">
+                <div class="f_sous_titre">
+                    <h1>Client DIRECT</h1>
+                </div>
+            </div>
+            <div class="row block2">
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                    <div class="f_block">
+                        <div class="f_block_top">
+                            <aside>
+                                <p>
+                                    <img src="{{ asset('images/fidelisation/icone_friends.png') }}" class="icone_stat" alt="icone_friends">
+                                </p>
+                            </aside>
+                        </div>
+                        <div class="f_block_bottom">
+                            <aside>
+                                <p>Nombre <br>de clients DIRECT</p>
+                            </aside>
+                            <aside>
+                                <p class="f_val_stat"><span>{{ datas|length }}</span></p>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                    <div class="f_block">
+                        <div class="f_block_top">
+                            <aside>
+                                <p>
+                                    <img src="{{ asset('images/fidelisation/icone_nuite.png') }}" class="icone_stat" alt="icone_friends">
+                                </p>
+                            </aside>
+                        </div>
+                        <div class="f_block_bottom">
+                            <aside>
+                                <p>Nombre <br>de nuitées totales</p>
+                            </aside>
+                            <aside>
+                                <p class="f_val_stat"><span>{{ nuitee }}</span></p>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+                <div id="test"></div>
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                    <div class="f_block">
+                        <div class="f_block_top">
+                            <aside>
+                                <p>
+                                    <img src="{{ asset('images/fidelisation/icone_rev_global.png') }}" class="icone_stat" alt="icone_friends">
+                                </p>
+                            </aside>
+                        </div>
+                        <div class="f_block_bottom">
+                            <aside>
+                                <p>Revenu <br>global</p>
+                            </aside>
+                            <aside>
+                                <p class="f_val_stat"><span class="montant_f" id="montant_f">{{ ca|number_format(2, ',', ' ') }}</span><span class="unite_f"> Ar</span></p>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row block3">
+                <div class="col-lg-10">
+                    <div class="f_table_home">
+                        <div class="top_tab">
+                        <h4>Clients</h4>
+                            <p id="p_container_input_search" class="p_container_input_search">
+                                <span class="fa fa-search"></span>
+                                <input type="text" id="mySearchText" placeholder="Rechercher...">
+                            </p>
+                        </div>
+                        <table class="table" id="table_f">
+                            <thead>
+                                <tr>
+                                    <th><span>Nom/Prénom</span></th>
+                                    <th><span>Hôtel</span></th>
+                                    <th><span>Checkin-Checkout</span></th>
+                                    <th><span>Nbr nuitée</span></th>
+                                    <th><span>Chiffre d'affaire</span></th>
+                                    <th><span>Source</span></th>
+                                    <th><span>Fidélisation</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for visit in datas %}
+                                    <tr data-id = "{{ visit[0].customer.id }}">
+                                        <td>
+                                            <span class="nom">{{ visit[0].customer.name }}</span><br>
+                                            <span class="nom">{{ visit[0].customer.lastName }}</span>
+                                        </td>
+                                        <td>
+                                            <span>{{ visit[0].hotel.nom }}</span>
+                                        </td>
+                                        <td>
+                                            <span>{{ visit[0].checkin|date('d/m/Y') }}</span>
+                                            <span>-</span>
+                                            <span>{{ visit[0].checkout|date('d/m/Y') }}</span>
+                                        </td>
+                                        <td><span class="nbr_nuitee">{{ visit[0].nbrNuitee }}</span></td>
+                                        <td><span class="montant_table_fid">{{ visit[0].montant|number_format(2, ',', ' ') }}</span></td>
+                                        <td><span>{{ visit[0].source }}</span></td>
+                                        <td>
+                                            <span class="{{ visit[0].customer.fidelisation ? visit['style_etiquette']: '' }}">{{ visit[0].customer.fidelisation ? visit['nom_aff']|capitalize : ''  }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 col-sm-12">
+                    <div class="f_graph">
+                        {# graph #}
+                        <div class="canvas-con">
+                            <div class="canvas-con-inner">
+                                {# <p class="text_center_chart">Client <br>DIRECT</p> #}
+                                <canvas id="mychart" height="250px"></canvas>
+                            </div>
+                            <div id="my-legend-con" class="legend-con">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         </div>
+    </section>
+{% endblock %}
+{% block javascripts %}
+    <script src="https://github.com/chartjs/Chart.js/releases/download/v2.9.3/Chart.min.js"></script>
+
+    <script>
+
+        $(document).ready(function(){
+
+            var table = $('#table_f').DataTable({
+                   
+                    "language": {
+                        "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                        "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                        "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                        "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                        "sInfoPostFix": "",
+                        "sInfoThousands": ",",
+                        "sLengthMenu": "Afficher _MENU_ éléments",
+                        "sLoadingRecords": "Chargement...",
+                        "sProcessing": "Traitement...",
+                        "sSearch": "",
+                        "sZeroRecords": "Aucun élément correspondant trouvé",
+                        "oPaginate": {
+                            "sFirst": "Premier",
+                            "sLast": "Dernier",
+                            "sNext": "Suivant",
+                            "sPrevious": "Précédent"
+                        },
+                        "oAria": {
+                            "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                            "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                        },
+                        "select": {
+                            "rows": {
+                                    "_": "%d lignes sélectionnées",
+                                    "0": "Aucune ligne sélectionnée",
+                                    "1": "1 ligne sélectionnée"
+                            }
+                        }
+                    },
+
+                    /*"ajax" : {
+                        url : "/profile/select_current_client", // any am Clientcontroller
+                        type : 'POST', 
+                        data : {
+                            'pseudo_hotel' : pseudo_hotel,
+                            'date'  : $("#donnee_du_jour_createdAt").val(),
+							'date1' : $("#date1").val(),
+							'date2'	: $("#date2").val()
+                            },
+                        "dataSrc":"",
+                        
+                    },*/
+                    "initComplete":function( settings, json){
+						
+                        var montant = document.querySelectorAll(".montant");
+                        var t = montant.length;
+                        var test = new Intl.NumberFormat();
+                        if (t > 0) {
+                            for (var i = 0; i < t; i++) {
+                                var val = test.format(montant[i].innerHTML);
+                                montant[i].innerHTML = val;
+                            }           
+                        }
+                    },
+
+                    //annule le tri
+                    order : [[3 , 'desc']],
+                    ordering : true,
+
+                    responsive: true,
+                    scrollY: false, // raha scrollena de asina val ex 400
+                    scrollX: true,
+                    scrollCollapse: true,
+                    paging: true,
+                     autoFill: true
+            });
+
+                new $.fn.dataTable.FixedHeader(table);
+
+                $("div.toolbar").html(`
+                    <div class="tf_toolbar">
+                        <h4> Titre du tableau </h4>
+                    </div>
+                `);
+                $('#mySearchText').on( 'keyup', function () {
+                    table.search($(this).val()).draw();
+                });
+
+                /* datatable clickable */
+
+                $('#table_f').on('click', 'tbody td', function() {
+
+                    var id = $(this).parent().attr('data-id');
+                    //alert(contact)
+                    window.location.href = "/profile/fidelisation/fiche_client/" + hotel + "/" + id;
+                })
+
+                // chart Js 
+
+                Chart.defaults.RoundedDoughnut    = Chart.helpers.clone(Chart.defaults.doughnut);
+                Chart.controllers.RoundedDoughnut = Chart.controllers.doughnut.extend({
+                    draw: function(ease) {
+                        var ctx           = this.chart.ctx;
+                        var easingDecimal = ease || 1;
+                        var arcs          = this.getMeta().data;
+                        Chart.helpers.each(arcs, function(arc, i) {
+                            arc.transition(easingDecimal).draw();
+
+                            var pArc   = arcs[i === 0 ? arcs.length - 1 : i - 1];
+                            var pColor = pArc._view.backgroundColor;
+
+                            var vm         = arc._view;
+                            
+                            var radius     = (vm.outerRadius + vm.innerRadius) / 2;
+                            var thickness  = (vm.outerRadius - vm.innerRadius) / 2;
+
+                            var startAngle = Math.PI - vm.startAngle - Math.PI / 2;
+                            var angle      = Math.PI - vm.endAngle - Math.PI / 2;
+
+                            ctx.save();
+                            ctx.translate(vm.x, vm.y);
+
+                            ctx.fillStyle = i === 0 ? vm.backgroundColor : pColor;
+                            ctx.beginPath();
+                            ctx.arc(radius * Math.sin(startAngle), radius * Math.cos(startAngle), thickness, 0, 2 * Math.PI);
+                            ctx.fill();
+
+                            ctx.fillStyle = vm.backgroundColor;
+                            ctx.beginPath();
+                            ctx.arc(radius * Math.sin(angle), radius * Math.cos(angle), thickness, 0, 2 * Math.PI);
+                            ctx.fill();
+
+                            ctx.restore();
+                        });
+                    }
+                });
+
+           var icone = [
+               "{{ asset('images/fidelisation/client_ota.png') }}",
+               "{{ asset('images/fidelisation/client_corpo.png') }}",
+               "{{ asset('images/fidelisation/client_toa.png') }}",
+               "{{ asset('images/fidelisation/client_direct.png') }}"
+           ]
+
+            // var chartData = [
+            //     {"nom": "EMAIL", "eff": 20, "ca" : 12000000}, 
+            //     {"nom": "TELEPHONE", "eff" : 0 , "ca": 2025000}, 
+            //     {"nom": "SITE WEB", "eff" : 10 ,"ca": 13000000}, 
+            //     {"nom": "WALKING","eff" : 30 , "ca": 14000000}
+            // ]
+            
+            var chartData = $('<div>').html('{{ effectif }}')[0].textContent;
+            var chartData = JSON.parse(chartData);
+
+            var data_aff = [];
+
+            for(var i = 0; i< chartData.length; i++){
+                data_aff.push(chartData[i].eff);
+            }
+
+            // format montant ca 
+            var test = new Intl.NumberFormat();
+            for (var i = 0; i <  chartData.length; i++) {
+                var temp = chartData[i].ca.toString();
+                
+                var val = test.format(temp);
+                
+                chartData[i].ca = val;
+
+            }
+            
+            //console.log(chartData);
+            var label = [];
+
+            for(var i = 0; i< chartData.length; i++){
+                label.push(chartData[i].nom);
+            }
+
+            var myChart = new Chart(document.getElementById('mychart'), {
+                type: 'doughnut',// doughnut
+                animation:{
+                    animateScale:true
+                },
+                data: {
+                    labels: label,
+                    datasets: [{
+                        label: 'Client',
+                        data: data_aff,
+                        backgroundColor: [
+                            "#1098F7",
+                            "#47C582",
+                            "#D49E00",
+                            "#7B61FF"
+                        ],
+                        borderColor: "#2b2b2b",
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    elements: {
+                        center: {
+                            //text: textInside
+                        }
+                    },
+                    hover : {
+                        onHover: function(event,elements) {
+                            $("#mychart").css("cursor", elements[0] ? "pointer" : "default");
+                            $("p.text_center_chart").css("background", "transparent !important");
+                        }
+                    },
+                    responsive: true,
+                    legend: {
+                        
+                    },
+                    legendCallback: function(chart) {
+                        var legendHtml = [];
+                        legendHtml.push('<ul class="ul_legend">');
+                        var item = chart.data.datasets[0];
+                        var tab_link = ["{{ path('client_OTA', {'pseudo_hotel' : hotel}) }}", 
+                                        "{{ path('client_CORPO', {'pseudo_hotel' : hotel}) }}",
+                                        "{{ path('client_TOA', {'pseudo_hotel' : hotel}) }}",
+                                        "{{ path('client_DIRECT', {'pseudo_hotel' : hotel}) }}",
+                        ]
+                        for (var i=0; i < item.data.length; i++) {
+                            legendHtml.push('<li>');
+                            legendHtml.push(`
+                                
+                                    <div class="div_icone">
+                                        <img width="45px" height="45px" src="`+ icone[i] +`" alt="OTA" />
+                                    </div>
+                                    <div class="div_label">
+                                        <span>Source ` + chart.data.labels[i] + `</span></br>
+                                        <span>` + item.data[i] + ` </span>
+                                    </div>
+                                    <div class="div_label">
+                                        <span>CA ` + chart.data.labels[i] + `</span></br>
+                                        <span>`+ (chartData[i].ca) +` Ar</span>
+                                    </div>
+                               
+                            `);
+                            legendHtml.push('</li>');
+                        }
+
+                        legendHtml.push('</ul>');
+                        return legendHtml.join("");
+                    },
+                    tooltips: {
+                        enabled: true,
+                        mode: 'label',
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                var indice = tooltipItem.index;
+                                return data.datasets[0].data[indice] + " clients " + data.labels[indice] + '';
+                            }
+                        }
+                    },
+                }
+            });
+
+            $('#my-legend-con').html(myChart.generateLegend());
+            var montant = document.querySelectorAll(".montant");
+            var t = montant.length;
+            var test = new Intl.NumberFormat();
+            if (t > 0) {
+                for (var i = 0; i < t; i++) {
+                    var temp = montant[i].innerHTML.replaceAll(" ", "");
+                    var val = test.format(temp);
+                    montant[i].innerHTML = val;
+                }
+            }
+
+
+            /* / chart*/
+        })
+            
+    </script>
+    
+{% endblock %}

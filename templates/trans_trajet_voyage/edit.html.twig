@@ -1,0 +1,15 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Edit TransTrajetVoyage{% endblock %}
+
+{% block body %}
+    <h1>Edit TransTrajetVoyage</h1>
+
+    {{ include('trans_trajet_voyage/_form.html.twig', {'button_label': 'Modifier'}) }}
+
+    <div class="d-flex mt-4">
+        <a href="{{ path('trans_trajet_voyage_index') }}" class="btn btn-xs btn-primary mr-2">Revenir à la liste</a>
+
+        {{ include('trans_trajet_voyage/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

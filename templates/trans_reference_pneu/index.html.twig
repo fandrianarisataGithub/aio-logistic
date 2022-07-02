@@ -1,0 +1,37 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}TransReferencePneu index{% endblock %}
+
+{% block body %}
+    <h1>Liste des références pneu</h1>
+    <a href="{{ path('trans_reference_pneu_new') }}" class="btn-primary btn-sm">Ajouter</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom</th>
+                <th>Rang</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for trans_reference_pneu in trans_reference_pneus %}
+            <tr>
+                <td>{{ trans_reference_pneu.id }}</td>
+                <td>{{ trans_reference_pneu.nom }}</td>
+                <td>{{ trans_reference_pneu.rang }}</td>
+                <td>
+                    <a href="{{ path('trans_reference_pneu_show', {'id': trans_reference_pneu.id}) }}" class="btn btn-xs btn-info">Ouvrir</a>
+                    <a href="{{ path('trans_reference_pneu_edit', {'id': trans_reference_pneu.id}) }}" class="btn btn-xs btn-success">Modifier</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    
+{% endblock %}

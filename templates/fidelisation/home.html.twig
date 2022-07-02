@@ -1,0 +1,478 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}FIDELISATION ACCUEIL{% endblock %}
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ asset('css/dashboard.css')}}">
+    <link rel="stylesheet" href="{{ asset('css/style_chart_rounded.css') }}">
+    {# <link rel="stylesheet" href="https://github.com/chartjs/Chart.js/releases/download/v2.9.3/Chart.min.css"> #}
+    <style>
+        .side-nav{
+            width : 100px !important;
+        }
+        #contents{
+            margin-left : 100px !important;
+        }
+        #aside1 ul li.logo_active_fidelisation{
+            background-color: #555555;
+        } 
+        #aside1 ul li.logo_active {
+            background-color: transparent;
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    <section
+        id="contents" class="container-fluid">
+        <!-- entete content -->
+        {% include "nav2.html.twig" %}
+        <!-- / entete content -->
+        <div id="hrs_content" class="fidelisation">
+            <header>
+                <div class="f_titre">
+                    <h1>Fidélisation client</h1>
+                    <h3>(Provenance : DIRECT, OTA et TOA)</h3>
+                </div>
+                {% include "profile_user_fidelisation.html.twig" %}
+            </header>
+            {# liste fidel #}
+            {% if is_granted('ROLE_ADMIN')  %}
+            <div class="row block1">      
+                {# boucle fid #}
+                {# for displaying effectif by fid name #}
+                {% for item in fidelisations %}
+                    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                        <div class="f_action_pack">
+                            {# <a href="#" class="a_bull">
+                                <span class="fa fa-ellipsis-h"></span>
+                            </a> #}
+                            <div class="his_dropDown">
+                                <a class="dropdown-item open_modal" href="#" data-id = "{{ item['fid'].id }}"  data-toggle="modal">
+                                    <span class="fa fa-gear"></span><span>Parametrer</span>
+                                </a>
+                                {# <a class="dropdown-item open_modal" data-id = "{{ item.id }}" href="#">
+                                    <span class="fa fa-trash-o"></span><span>Supprimer</span>
+                                </a> #}
+                            </div>
+                        </div>
+                        <a class="f_block" href="{{ path('fidelisation_' ~ item['fid'].nom, {'pseudo_hotel' : hotel}) }}">
+                            <div class="f_block_top">
+                                <aside>
+                                    <p>
+                                    <span class="f_val">
+                                        {# calcul his total customers #}
+                                        {{ item['stat'] }}
+                                    </span> Client{% if item['stat'] >= 2 %}<span>s</span>{% endif %}
+                                    </p>
+                                </aside>
+                                <aside>
+                                    <p>
+                                        <img src="{{ asset('images/fidelisation/' ~ item['fid'].getIconeCarte()) }}" class="icone_client" alt="gris">
+                                    </p>
+                                </aside>
+                            </div>
+                            <div class="f_block_bottom">
+                                <aside>
+                                    <p>Client</p>
+                                    <p class="nom_f">{{ item['fid'].getNomAff()|upper }}</p>
+                                </aside>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+
+                {# / boucle fid #}
+            </div>
+            {# /liste fidel #}
+            {# statistique #}
+            
+            <div class="row block2">
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                    <div class="f_block">
+                        <div class="f_block_top">
+                            <aside>
+                                <p>
+                                    <img src="{{ asset('images/fidelisation/icone_friends.png') }}" class="icone_stat" alt="icone_friends">
+                                </p>
+                            </aside>
+                        </div>
+                        <div class="f_block_bottom">
+                            <aside>
+                                <p>Nombre <br>de clients fidelisés</p>
+                            </aside>
+                            <aside>
+                                <p class="f_val_stat"><span class="montant_f">{{ datas|length }}</span></p>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                    <div class="f_block">
+                        <div class="f_block_top">
+                            <aside>
+                                <p>
+                                    <img src="{{ asset('images/fidelisation/icone_nuite.png') }}" class="icone_stat" alt="icone_friends">
+                                </p>
+                            </aside>
+                        </div>
+                        <div class="f_block_bottom">
+                            <aside>
+                                <p>Nombre <br>de nuitées totales</p>
+                            </aside>
+                            <aside>
+                                <p class="f_val_stat"><span class="montant_f">{{ nbrNuitee }}</span></p>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+                <div id="test"></div>
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                    <div class="f_block">
+                        <div class="f_block_top">
+                            <aside>
+                                <p>
+                                    <img src="{{ asset('images/fidelisation/icone_rev_global.png') }}" class="icone_stat" alt="icone_friends">
+                                </p>
+                            </aside>
+                        </div>
+                        <div class="f_block_bottom">
+                            <aside>
+                                <p>Revenu <br>global</p>
+                            </aside>
+                            <aside>
+                                <p class="f_val_stat"><span class="montant_f">{{ rev_global }}</span><span class="unite_f"> Ar</span></p>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {# /statistique #}
+            {# tableau et graph #}
+            <div class="row block3">
+                <div class="col-lg-8">
+                    <div class="f_table_home">
+                        <div class="top_tab">
+                            <h4>Clients</h4>
+                             <p id="p_container_input_search">
+                                <span class="fa fa-search"></span>
+                                <input type="text" id="mySearchText" placeholder="Rechercher...">
+                            </p>
+                        </div>
+                        <table class="table" id="table_f">
+                            <thead>
+                                <tr>
+                                    <th><span>Nom/Prénom</span></th>
+                                    <th><span>Email</span></th>
+                                    <th><span>Téléphone</span></th>
+                                    <th><span class="span_value_montant">Chiffre d'affaire</span></th>
+                                    <th><span>Nuitée</span></th>
+                                    <th><span>Fidélisation</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in datas %}
+                                    <tr data-id = "{{ client[0].id }}">
+                                        <td>
+                                            <span class="nom">{{ client[0].name }}</span><br>
+                                            <span class="nom">{{ client[0].lastName }}</span>
+                                        </td>
+                                        <td><span>{{ client[0].email }}</span></td>
+                                        <td><span>{{ client[0].telephone }}</span></td>
+                                        <td><span class="span_value_montant">{{ client['total_montant']|number_format(2, ',', ' ') }}</span></td>
+                                        <td><span class="span_value_nuitee">{{ client['total_nuitee'] }}</span></td>
+                                        <td>
+                                            <span class="{{ client['style_etiquette'] }}">{{ client['fid_nom']|capitalize  }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if is_granted('ROLE_ADMIN')  %}
+                    <div class="col-lg-4 col-md-12 col-sm-12">
+                        <div class="f_graph">
+                            {# graph #}
+                            <div class="canvas-con">
+                                <div class="canvas-con-inner">
+                                    {# <p class="text_center_chart">Provenance <br>client</p> #}
+                                    <canvas id="myChart" height="250px"></canvas>
+                                </div>
+                                <div id="my-legend-con" class="legend-con">
+                                    <ul class="ul_legend">
+                                        <li>
+                                            <a href="{{ path('client_OTA', {'pseudo_hotel' : hotel}) }}" class="link_chart_donut">
+                                                <div class="div_icone">
+                                                    <img width="45px" height="45px" src="{{asset('images/fidelisation/client_ota.png')}}" alt="OTA" />
+                                                </div>
+                                                <div class="div_label">
+                                                    <span>Client OTA</span></br>
+                                                    <span>{{ eff_prov_twig[0].pourcent }}%</span>
+                                                </div>
+                                                <div class="div_stat">
+                                                    <span class="effectif">{{ eff_prov_twig[0].eff|number_format(0, '', ' ') }}</span>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ path('client_TOA', {'pseudo_hotel' : hotel}) }}" class="link_chart_donut">
+                                                <div class="div_icone">
+                                                    <img width="45px" height="45px" src="{{asset('images/fidelisation/client_toa.png')}}" alt="TOA" />
+                                                </div>
+                                                <div class="div_label">
+                                                    <span>Client TOA</span></br>
+                                                    <span>{{ eff_prov_twig[1].pourcent }}%</span>
+                                                </div>
+                                                <div class="div_stat">
+                                                    <span class="effectif">{{ eff_prov_twig[1].eff|number_format(0, '', ' ') }}</span>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ path('client_CORPO', {'pseudo_hotel' : hotel}) }}" class="link_chart_donut">
+                                                <div class="div_icone">
+                                                    <img width="45px" height="45px" src="{{asset('images/fidelisation/client_corpo.png')}}" alt="CORPO" />
+                                                </div>
+                                                <div class="div_label">
+                                                    <span>Client CORPO</span></br>
+                                                    <span>{{ eff_prov_twig[2].pourcent }}%</span>
+                                                </div>
+                                                <div class="div_stat">
+                                                    <span class="effectif">{{ eff_prov_twig[2].eff|number_format(0, '', ' ') }}</span>
+                                                </div>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ path('client_DIRECT', {'pseudo_hotel' : hotel}) }}" class="link_chart_donut">
+                                                <div class="div_icone">
+                                                    <img width="45px" height="45px" src="{{asset('images/fidelisation/client_direct.png')}}" alt="DIRECT" />
+                                                </div>
+                                                <div class="div_label">
+                                                    <span>Client DIRECT</span></br>
+                                                    <span>{{ eff_prov_twig[3].pourcent }}%</span>
+                                                </div>
+                                                <div class="div_stat">
+                                                    <span class="effectif">{{ eff_prov_twig[3].eff|number_format(0, '', ' ') }}</span>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            {# /tableau et graph #}
+        </div>
+    <section>
+    {% include "fidelisation/fidelisation_modal.html.twig" %}
+{% endblock %}
+{% block javascripts %}
+    <script src="https://github.com/chartjs/Chart.js/releases/download/v2.9.3/Chart.min.js"></script>
+
+    <script>
+    var hotel = '{{ hotel }}'
+        var montant = document.querySelectorAll(".montant_f");
+            var t = montant.length;
+            var test = new Intl.NumberFormat();
+            if (t > 0) {
+                for (var i = 0; i < t; i++) {
+                    
+                    var val = test.format(montant[i].innerHTML.replaceAll(" ", ""));
+                    //alert(montant[i].innerHTML);
+                    montant[i].innerHTML = val;
+                }           
+        }
+
+        $(document).ready(function(){
+
+            var table = $('#table_f').DataTable({
+                   
+                    "language": {
+                        "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                        "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                        "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                        "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                        "sInfoPostFix": "",
+                        "sInfoThousands": ",",
+                        "sLengthMenu": "Afficher _MENU_ éléments",
+                        "sLoadingRecords": "Chargement...",
+                        "sProcessing": "Traitement...",
+                        "sSearch": "",
+                        "sZeroRecords": "Aucun élément correspondant trouvé",
+                        "oPaginate": {
+                            "sFirst": "Premier",
+                            "sLast": "Dernier",
+                            "sNext": "Suivant",
+                            "sPrevious": "Précédent"
+                        },
+                        "oAria": {
+                            "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                            "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                        },
+                        "select": {
+                            "rows": {
+                                    "_": "%d lignes sélectionnées",
+                                    "0": "Aucune ligne sélectionnée",
+                                    "1": "1 ligne sélectionnée"
+                            }
+                        }
+                    },
+
+                    /*"ajax" : {
+                        url : "/profile/select_current_client", // any am Clientcontroller
+                        type : 'POST', 
+                        data : {
+                            'pseudo_hotel' : pseudo_hotel,
+                            'date'  : $("#donnee_du_jour_createdAt").val(),
+							'date1' : $("#date1").val(),
+							'date2'	: $("#date2").val()
+                            },
+                        "dataSrc":"",
+                        
+                    },*/
+                    "initComplete":function( settings, json){
+						
+                        var allNodes = $('#table_f').DataTable().cells().nodes();
+						$.each($( '.montant', allNodes), function(index, node) {
+							var currency = new Intl.NumberFormat();
+							var val = currency.format(node.innerHTML.replaceAll(" ", ""));
+							node.innerHTML = val;
+						}); 
+                    },
+
+                    //annule le tri
+                    order : [[3 , 'desc']],
+                    ordering : true,
+
+                    responsive: true,
+                    scrollY: false, // raha scrollena de asina val ex 400
+                    scrollX: true,
+                    scrollCollapse: true,
+                    paging: true,
+                     autoFill: true
+                });
+
+                new $.fn.dataTable.FixedHeader(table);
+
+                $("div.toolbar").html(`
+                    <div class="tf_toolbar">
+                        <h4> Titre du tableau </h4>
+                    </div>
+                `);
+                $('#mySearchText').on( 'keyup', function () {
+                    table.search($(this).val()).draw();
+                } );
+
+                /* datatable clickable */
+
+                $('#table_f').on('click', 'tbody td', function() {
+
+                    var id = $(this).parent().attr('data-id');
+                    //alert(contact)
+                    window.location.href = "/profile/fidelisation/fiche_client/" + hotel + "/" + id;
+                })
+
+
+            /* anim chart */
+
+                /* / chart*/
+            // open modal 
+
+            $(".open_modal").click(function(ev){
+                ev.preventDefault();
+                //modif_fidelisation_pack
+                //
+                var id = $(this).attr("data-id");
+                // on check cette fide
+                $.ajax({
+                    url : "/profile/check_fidelisation/" + id,
+                    type : "POST",
+                    data : { "id" : id },
+                    success : function(response){
+
+                        $("#modif_fidelisation_pack .modal-body").html(response);
+                        $("#modif_fidelisation_pack").modal("show");
+                    },
+                    error : function(){
+                        console.log("Erreur au niveau de check fid");
+                    }
+                })
+            })
+
+           $(document).on('click', "#modal_button_modif_fid", function(ev){
+                    ev.preventDefault();
+                    
+                    var id = $(this).attr('data-id');
+                    var ln = $("#fid_limite_nuitee").val();
+                    var lc = $("#fid_limite_ca").val();
+                    var data = {
+                        "id" : id,
+                        "ln" : ln,
+                        "lc" : lc
+                    }
+                    $.ajax({
+                        url : "/profile/modify_fidelisation/" + id,
+                        type : "POST",
+                        data : data,
+                        success : function(response){
+                            
+                            if(response ===  "ok"){
+                                $("#modif_fidelisation_pack").modal("hide");
+                                // reload the page 
+                                window.location.reload();
+                            }
+                        },
+                        error : function(){
+                            console.log("Erreur au niveau de check fid");
+                        }
+                    })
+           })
+
+           /* animation bull  */
+
+           $(".block1 .f_block").hover(
+               function(){
+                    $(this).siblings(".f_action_pack").find('.a_bull').css("display", "inline-flex");
+                },
+                function(){
+                   // $(this).siblings(".f_action_pack").find('.a_bull').hide();
+                   var a_bull_isHover = $(this).siblings(".f_action_pack").find('.a_bull:hover').length;
+                   if(a_bull_isHover == 0){
+                       $(this).siblings(".f_action_pack").find('.a_bull').hide();
+                
+                   }
+                }
+           )
+
+           $(".a_bull").on({
+               click : function(ev){
+                   ev.preventDefault();
+                   $(this).siblings(".his_dropDown").toggle();
+               },
+               mouseleave : function() {
+                   his_drp_isHover = $(this).siblings(".his_dropDown:hover").length;
+                   if(his_drp_isHover == 0){
+                       $(this).hide();
+                        $(this).siblings(".his_dropDown").hide();
+                   }
+               }
+           })
+
+           $(".his_dropDown").mouseleave(function(){
+               $(this).hide();
+               var a_bull_isHover = $(this).siblings(".f_action_pack").find('.a_bull:hover').length;
+                if(a_bull_isHover == 0){
+                    $('.a_bull').hide();
+            
+                }
+           })
+        
+        })
+            
+    </script>
+    {% include "fidelisation/chart_home.html.twig" %}
+    {# vue.js #}
+    
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Edit TransReferencePneu{% endblock %}
+
+{% block body %}
+    <h1>Modifier la référence pneu</h1>
+
+    {{ include('trans_reference_pneu/_form.html.twig', {'button_label': 'Modifier'}) }}
+
+    <div class="d-flex my-4">
+        <a href="{{ path('trans_reference_pneu_index') }}" class="btn btn-primary btn-xs my-2">Revenir à la liste</a>
+
+        {{ include('trans_reference_pneu/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

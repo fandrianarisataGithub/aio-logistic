@@ -1,0 +1,15 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Edit TransStationCarb{% endblock %}
+
+{% block body %}
+    <h1>Modifier Station Carburant</h1>
+
+    {{ include('trans_station_carb/_form.html.twig', {'button_label': 'Modifier'}) }}
+
+    <div class="d-flex my-4">
+        <a href="{{ path('trans_station_carb_index') }}" class="btn btn-xs btn-primary mr-2">Revenir à la liste</a>
+
+        {{ include('trans_station_carb/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

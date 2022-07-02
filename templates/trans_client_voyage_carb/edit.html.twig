@@ -1,0 +1,15 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Edit TransClientVoyageCarb{% endblock %}
+
+{% block body %}
+    <h1>Modifier client voyage/carburant</h1>
+
+    {{ include('trans_client_voyage_carb/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <div class="d-flex my-4">
+        <a href="{{ path('trans_client_voyage_carb_index') }}" class="btn btn-primary btn-xs mr-2">revenir à la liste</a>
+
+        {{ include('trans_client_voyage_carb/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

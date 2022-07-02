@@ -1,0 +1,185 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Garage{% endblock %}
+
+{% block body %}
+<div id="app">
+    <div class="title-page-trans">
+        <h1 class="fs-primary">importation des données excel</h1>
+    </div>
+    <section class="d-flex justify-content-between align-items-center bloc-form-import">
+        <div class="container my-5 d-flex flex-column  justify-content-between align-items-center">
+            <div class="import-div">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="m-0 subtitle">Données véhicules</h2>
+                    <span>
+                        <a target="_blank" href="{{ path('transport_vehicule') }}" class="btn btn-info btn-sm">Base de donnée</a>
+                    </span>
+                </div>
+                {{ form_start(formVehicule, {
+                    'attr' : {
+                        'id' : 'form_import_excel'
+                    }
+                }) }}
+                {{ form_row(formVehicule.fichier) }}
+                <input type="submit" value="Importer" class="btn-filter btn-sm">
+                {{ form_end(formVehicule) }}
+            </div>
+        </div>
+        <div class="container my-5 d-flex flex-column  justify-content-between align-items-center">
+            <div class="import-div ">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="m-0 subtitle">Données chauffeurs</h2>
+                    <span>
+                        <a target="_blank" href="{{ path('transport_chauffeur') }}" class="btn btn-info btn-sm">Base de donnée</a>
+                    </span>
+                </div>
+                {{ form_start(formChauffeur, {
+                    'attr' : {
+                        'id' : 'form_import_excel_chauffeur'
+                    }
+                }) }}
+                {{ form_row(formChauffeur.fichier) }}
+                <input type="submit" value="Importer" class="btn-filter btn-sm">
+                {{ form_end(formChauffeur) }}
+            </div>
+        </div>
+    </section>
+    <section class="d-flex justify-content-between align-items-center bloc-form-import">
+        <div class="container my-5 d-flex flex-column  justify-content-between align-items-center">
+            <div class="import-div">  
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="m-0 subtitle">Données <br> Client voyage</h2>
+                    <span>
+                        <a target="_blank" href="{{ path('trans_client_voyage_carb_index') }}" class="btn btn-info btn-sm">Base de donnée</a>
+                    </span>
+                </div>
+                {{ form_start(formClientVoyage, {
+                    'attr' : {
+                        'id' : 'form_import_excel_chauffeur'
+                    }
+                }) }}
+                {{ form_row(formClientVoyage.fichier) }}
+                <input type="submit" value="Importer" class="btn-filter btn-sm">
+                {{ form_end(formClientVoyage) }}
+            </div>
+        </div>
+        <div class="container my-5 d-flex flex-column  justify-content-between align-items-center">
+            <div class="import-div">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="m-0 subtitle">Données Trajet</h2>
+                    <span>
+                        <a target="_blank" href="{{ path('trans_trajet_voyage_index') }}" class="btn btn-info btn-sm">Base de donnée</a>
+                    </span>
+                </div>
+                {{ form_start(formTrajet, {
+                    'attr' : {
+                        'id' : 'form_import_excel_chauffeur'
+                    }
+                }) }}
+                {{ form_row(formTrajet.fichier) }}
+                <input type="submit" value="Importer" class="btn-filter btn-sm">
+                {{ form_end(formTrajet) }}
+            </div>
+        </div>
+    </section>
+    <section class="d-flex justify-content-between align-items-center bloc-form-import">
+        <div class="container my-5 d-flex flex-column  justify-content-between align-items-center">
+            <div class="import-div">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="m-0 subtitle">Données <br> Station Carburant</h2>
+                    <span>
+                        <a target="_blank" href="{{ path('trans_station_carb_index') }}" class="btn btn-info btn-sm">Base de donnée</a>
+                    </span>
+                </div>
+                {{ form_start(formStationCarb, {
+                    'attr' : {
+                        'id' : 'form_import_excel_chauffeur'
+                    }
+                }) }}
+                {{ form_row(formStationCarb.fichier) }}
+                <input type="submit" value="Importer" class="btn-filter btn-sm">
+                {{ form_end(formStationCarb) }}
+            </div>
+        </div>
+        <div class="container my-5 d-flex flex-column  justify-content-between align-items-center">
+            <div class="import-div">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="m-0 subtitle">Données <br> Réf pneu</h2>
+                    <span>
+                        <a target="_blank" href="{{ path('trans_reference_pneu_index') }}" class="btn btn-info btn-sm">Base de donnée</a>
+                    </span>
+                </div>
+                {{ form_start(formRefPneu, {
+                    'attr' : {
+                        'id' : 'form_import_excel_chauffeur'
+                    }
+                }) }}
+                {{ form_row(formRefPneu.fichier) }}
+                <input type="submit" value="Importer" class="btn-filter btn-sm">
+                {{ form_end(formRefPneu) }}
+            </div>
+        </div>
+    </section>
+    {# pos pneu #}
+    <section class="d-flex justify-content-between align-items-center bloc-form-import">
+        <div class="container my-5 d-flex flex-column  justify-content-between align-items-center">
+            <div class="import-div">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="m-0 subtitle">Données <br> Position pneu</h2>
+                    <span>
+                        <a target="_blank" href="{{ path('tran_position_pneu_index') }}" class="btn btn-info btn-sm">Base de donnée</a>
+                    </span>
+                </div>
+                {{ form_start(formPosPneu, {
+                    'attr' : {
+                        'id' : 'form_import_excel_chauffeur'
+                    }
+                }) }}
+                {{ form_row(formPosPneu.fichier) }}
+                <input type="submit" value="Importer" class="btn-filter btn-sm">
+                {{ form_end(formPosPneu) }}
+            </div>
+        </div>
+        {# marque pneu #}
+        <div class="container my-5 d-flex flex-column  justify-content-between align-items-center">
+            <div class="import-div">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="m-0 subtitle">Données <br> Marque pneu</h2>
+                    <span>
+                        <a target="_blank" href="{{ path('trans_marque_pneu_index') }}" class="btn btn-info btn-sm">Base de donnée</a>
+                    </span>
+                </div>
+                {{ form_start(formMarquePneu, {
+                    'attr' : {
+                        'id' : 'form_import_excel_chauffeur'
+                    }
+                }) }}
+                {{ form_row(formMarquePneu.fichier) }}
+                <input type="submit" value="Importer" class="btn-filter btn-sm">
+                {{ form_end(formMarquePneu) }}
+            </div>
+        </div>
+    </section>
+    <section class="d-flex justify-content-between align-items-center bloc-form-import">
+        {# code des pneu #}
+        <div class="container my-5 d-flex flex-column  justify-content-between align-items-center">
+            <div class="import-div">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="m-0 subtitle">Données <br>CODE-DESIGANTION</h2>
+                    <span>
+                        <a target="_blank" href="{{ path('trans_code_designation_piece_index') }}" class="btn btn-info btn-sm">Base de donnée</a>
+                    </span>
+                </div>
+                {{ form_start(formCodeDes, {
+                    'attr' : {
+                        'id' : 'form_import_excel_code_des'
+                    }
+                }) }}
+                <input type="submit" value="Générer la liste" class="btn-filter btn-sm">
+                {{ form_end(formCodeDes) }}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Edit TranPositionPneu{% endblock %}
+
+{% block body %}
+    <h1>Modifier le nom de cette position de pneu</h1>
+
+    {{ include('tran_position_pneu/_form.html.twig', {'button_label': 'Modifier'}) }}
+
+    <div class="d-flex my-4">
+        <a href="{{ path('tran_position_pneu_index') }}" class="btn btn-primary btn-xs mr-2">Revenir à la liste</a>
+
+        {{ include('tran_position_pneu/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

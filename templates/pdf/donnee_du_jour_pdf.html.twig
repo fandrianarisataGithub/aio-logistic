@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Export pdf donnée du jour</title>
+		<link href="https://fonts.googleapis.com/css?family=Lato:200,300,400,500,600,700,800,900,1000&display=swap" rel="stylesheet">
+		{# <link rel="stylesheet" media="print" href="{{ asset('css/pdf.css') }}"> #}
+		<style>
+			body {
+				background-color: #fff;
+				margin: 0;
+				padding: 0;
+				font-family: 'Lato', 'Poppins', sans-serif;
+				color: #3f3e3e;
+				font-size: 10px;
+			}
+			#corps {
+				width: 18cm;
+				padding: 1cm 0.5cm 1cm 0.5cm;
+				margin: 0px auto 0px auto;
+			}
+			header h2 .dore {
+				color: #d29e00;
+				font-size: 15px
+			}
+			header h2 .gris {
+				margin-left: 0.9cm;
+				text-align: end;
+				font-size: 15px;
+				color: #3c3b3b;
+			}
+			#corps .rubric {
+				margin-top: 0px;
+			}
+			.titre_rubric {
+				display: inline-block;
+				width: 100%;
+				padding-bottom: 5px;
+				color: #d29e00;
+				border-bottom: 0.2px solid rgba(200, 200, 200, 0.5);
+			}
+			.part h4{
+				text-decoration: underline;
+				margin: 0;
+			}
+			.data>p:not(:first-child) {
+				margin-left: 0px;
+			}
+			
+			table {
+				width: 100%;
+				background: lavenderblush;
+			}
+			thead {
+				background: #d29e00;
+				color: #fff;
+			}
+			thead>tr>th:first-child {
+				min-width: 200px;
+			}
+			tbody {
+				background: lightgray;
+			}
+			tbody tr td {
+				text-align: center;
+			}
+		</style>
+		
+	</head>
+	<body>
+		<section id="corps">
+			<header>
+				<h2 class="titre dore"><span class="dore">Donnée du jour le </span> <span class="gris">{{ date|date('d-m-Y') }}</span></h2>
+			</header>
+			{# {% if ddj is not null %} #}
+				
+			<div class="rubric first-rubric">
+				<div class="content">
+					<h3 class="titre_rubric">Hébergement</h3>
+					<div class="data">
+						<p class="heb">Chiffre d'affaire:
+							<span class="montant">{{ ddj ? ddj.getHebCa() : "" }}</span> Ar</p>
+						<p class="heb">Taux d'occupation:
+							<span>{{ ddj ? ddj.getHebTo() : "" }}</span> %</p>
+						<p class="heb">Nombre de pax hébergé:
+							<span>{{ ddj ? ddj.getNPaxHeb() : "" }}</span>
+						</p>
+						<p class="heb">Nombre de chambre occupés:
+							<span>{{ ddj ? ddj.getNChambreOccupe() : "" }}</span>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="rubric">
+
+				<div class="content">
+					<h3 class="titre_rubric">Restaurant</h3>
+					<div class="data">
+						<p class="resto">Chiffre d'affaire:
+							<span class="montant">{{ ddj ? ddj.getResCa() : "" }}</span> Ar</p>
+						<p class="resto">Nombre de couvert:
+							<span>{{ ddj ? ddj.getResNCouvert() : "" }}</span>
+						</p>
+						<p class="resto">Petit déjeuner:
+							<span>{{ ddj ? ddj.getResPDej() : ""}}</span>
+						</p>
+						<p class="resto">Déjeuner:
+							<span>{{ ddj ? ddj.getResDej() : "" }}</span>
+						</p>
+						<p class="resto">Dinner:
+							<span>{{ ddj ? ddj.getResDinner() : "" }}</span>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="rubric">
+				<div class="content">
+					<h3 class="titre_rubric">Spa</h3>
+					<div class="data">
+						<p class="spa">Chiffre d'affaire:
+							<span class="montant">{{ ddj ? ddj.getSpaCa() : "" }}</span> Ar</p>
+						<p class="spa">Nombre d'abonné:
+							<span>{{ ddj ? ddj.getSpaNAbonne() : "" }}</span>
+						</p>
+						<p class="spa">Fréquentation:
+							<span>{{ ddj ? ddj.getSpaCUnique() : "" }}</span>
+						</p>
+					</div>
+				</div>
+			</div>
+			{% if ddj is not null %}
+			<div class="rubric">
+				<div class="content_part_text">
+					<h3 class="titre_rubric">Compte rendu journalier</h3>
+					<div class="block">
+						{% if ddj.getCrjDirection() is not null %}
+							<div class="part">
+								<h4>Direction</h4>
+								<p class="part_content">
+									{{ ddj.getCrjDirection()|raw }}
+								</p>
+							</div>
+						{% endif %}
+						{% if ddj.getCrjServiceRh() is not null %}
+							<div class="part">
+								<h4>Service RH</h4>
+								<p class="part_content">
+									{{ ddj.getCrjServiceRh()|raw }}
+								</p>
+							</div>
+						{% endif %}
+					</div>
+					<div class="block">
+						{% if ddj.getCrjCommercial() is not null %}
+							<div class="part">
+								<h4>Commercial</h4>
+								<p class="part_content">
+									{{ ddj.getCrjCommercial()|raw }}
+								</p>
+							</div>
+						{% endif %}
+						{% if ddj.getCrjComptable() is not null %}
+							<div class="part">
+								<h4>Comptable</h4>
+								<p class="part_content">
+									{{ ddj.getCrjComptable()|raw }}
+								</p>
+							</div>
+						{% endif %}
+					</div>
+					<div class="block">
+						{% if ddj.getCrjReception() is not null %}
+							<div class="part">
+								<h4>Réception</h4>
+								<p class="part_content">
+									{{ ddj.getCrjReception()|raw }}
+								</p>
+							</div>
+						{% endif %}
+						{% if ddj.getCrjRestaurant() is not null %}
+							<div class="part">
+								<h4>Restaurant</h4>
+								<p class="part_content">
+									{{ ddj.getCrjRestaurant()|raw }}
+								</p>
+							</div>
+						{% endif %}
+					</div>
+					<div class="block">
+						{% if ddj.getCrjSpa() is not null %}
+							<div class="part">
+								<h4>Spa</h4>
+								<p class="part_content">
+									{{ ddj.getCrjSpa()|raw }}
+								</p>
+							</div>
+						{% endif %}
+						{% if ddj.getCrjSTechnique() is not null %}
+							<div class="part">
+								<h4>Service technique</h4>
+								<p class="part_content">
+									{{ ddj.getCrjSTechnique()|raw }}
+								</p>
+							</div>
+						{% endif %}
+						
+					</div>
+					<div class="block">
+						{% if ddj.getCrjLitiges() %}
+							<div class="part">
+								<h4>Litiges</h4>
+								<p class="part_content">
+									{{ ddj.getCrjLitiges()|raw }}
+								</p>
+							</div>
+						{% endif %}
+						{% if ddj.getCrjHebergement() %}
+							<div class="part">
+								<h4>Hébergement</h4>
+								<p class="part_content">
+									{{ ddj.getCrjHebergement()|raw }}
+								</p>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+			{% endif %} 
+			{% if clients|length != 0 %}
+			<div class="rubric">
+				<div class="content">
+					<h3 class="titre_rubric">Client présent le
+						<span>{{ date|date('d-m-Y') }}</span>
+					</h3>
+					<table>
+						<thead>
+							<tr>
+								<th>NOM</th>
+								<th>DATE D'ARRIVEE</th>
+								<th>DATE DU DEPART</th>
+								<th>DUREE DU SEJOUR</th>
+							</tr>
+						</thead>
+						<tbody>
+						{% for client in clients %}
+							<tr>
+								<td>{{ client.customer.name }} {{ client.customer.lastName }}</td>
+								<td>{{ client.checkin|date('d-m-Y') }}</td>
+								<td>{{ client.checkout|date('d-m-Y') }}</td>
+								<td>{{ client.nbrNuitee }}</td>
+							</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+			{% endif %}
+		</section>
+		<script>
+			var montant = document.querySelectorAll(".montant");
+			var t = montant.length;
+			var test = new Intl.NumberFormat();
+			if (t > 0) {
+				for (var i = 0; i < t; i++) {
+					var val = test.format(montant[i].innerHTML);
+					montant[i].innerHTML = val;
+				}
+			}
+		</script>
+	</body>
+</html>

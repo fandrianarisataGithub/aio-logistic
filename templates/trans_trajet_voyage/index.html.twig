@@ -1,0 +1,39 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}TransTrajetVoyage index{% endblock %}
+
+{% block body %}
+    <h1>Liste des trajets de voyage/carburant</h1>
+    <a href="{{ path('trans_trajet_voyage_new') }}" class="btn-primary btn-sm">Ajouter</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom</th>
+                <th>Montant</th>
+                <th>Rang</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for trans_trajet_voyage in trans_trajet_voyages %}
+            <tr>
+                <td>{{ trans_trajet_voyage.id }}</td>
+                <td>{{ trans_trajet_voyage.nom }}</td>
+                <td>{{ trans_trajet_voyage.montant }}</td>
+                <td>{{ trans_trajet_voyage.rang }}</td>
+                <td>
+                    <a href="{{ path('trans_trajet_voyage_show', {'id': trans_trajet_voyage.id}) }}" class="btn btn-xs btn-info">Ovrir</a>
+                    <a href="{{ path('trans_trajet_voyage_edit', {'id': trans_trajet_voyage.id}) }}" class="btn btn-xs btn-success">Modifier</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="5">Aucune ligne trouvée</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+   
+{% endblock %}

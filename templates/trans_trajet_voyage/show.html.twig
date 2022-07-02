@@ -1,0 +1,36 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}TransTrajetVoyage{% endblock %}
+
+{% block body %}
+    <h1>Trajet Voyage/Carburant</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ trans_trajet_voyage.id }}</td>
+            </tr>
+            <tr>
+                <th>Nom</th>
+                <td>{{ trans_trajet_voyage.nom }}</td>
+            </tr>
+            <tr>
+                <th>Montant</th>
+                <td>{{ trans_trajet_voyage.montant }}</td>
+            </tr>
+            <tr>
+                <th>Rang</th>
+                <td>{{ trans_trajet_voyage.rang }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('trans_trajet_voyage_index') }}" class="btn btn-xs btn-primary">Revenir à la liste</a>
+
+    <div class="d-flex my-4">
+        <a href="{{ path('trans_trajet_voyage_edit', {'id': trans_trajet_voyage.id}) }}" class="btn btn-xs btn-success mr-2">Modifier</a>
+
+        {{ include('trans_trajet_voyage/_delete_form.html.twig') }}
+    </div>
+{% endblock %}

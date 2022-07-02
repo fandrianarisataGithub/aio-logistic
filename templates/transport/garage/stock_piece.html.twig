@@ -1,0 +1,213 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}Stock Pièces{% endblock %}
+
+{% block body %}
+<div id="app">
+    <div class="list-action-garage">
+        <ul>
+            <li>
+                <a
+                    {% if (currentPath=="/profile/garage/stock")  %}
+                        class="a-hovered"
+                    {% endif %}
+                    href="{{ path('transport_garage_stock_piece') }}"
+                >Etat</a>
+            </li>
+            <li>
+                <a
+                    {% if (currentPath=="/profile/garage/entree") %}
+                        class="a-hovered"
+                    {% endif %}
+                    href="{{ path('transport_garage_entree_piece') }}"
+                >Entrées</a>
+            </li>
+            <li>
+               <a
+                    {% if (currentPath=="/profile/garage/sortie") %}
+                        class="a-hovered"
+                    {% endif %} 
+                    href="{{ path('transport_garage_sortie_piece') }}"
+                >Sorties</a>
+            </li>
+        </ul>
+    </div>
+    <div class="title-page-trans">
+        <h1 class="fs-primary">Stock Pièces</h1>
+    </div>
+    <div class="array">
+        <div class="array-head">
+            <div class="input-content input-search-trans-array">
+                <span class="fa fa-search"></span><input id="mySearchText" type="text" placeholder="Recherche">
+            </div>
+            <div class="maj-export">
+                <a href="#" id="export" class="fond-lightGreen btn-maj">
+                    <span><img src="{{ asset('images/icones_trans/export.svg') }}" alt="export"></span>
+                    <span>Export Excel</span>
+                </a>
+            </div>
+        </div>
+        <div class="trans_tableau">
+            <table id="tableau-stock" class="table" style="width:100%" >
+                <thead>
+                    <tr>
+                        <th class="date">DATE DE MAJ</th>
+                        <th class="code">CODE ARTICLE</th>
+                        <th class="designation">DESIGNATION</th>
+                        <th class="quantite">Qté EN STOCK</th>
+                        <th class="prix_unitaire">PRIX UNITAIRE (HT)</th>
+                        <th class="prix_total">PRIX TOTAL</th>
+                        <th class="action"></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4">
+                        </td>
+                        <td colspan="1">
+                            TOTAL TTC :
+                        </td>
+                        <td colspan="1" style="text-align:start;">
+                            <span class="montant">0</span> <span class="unite_ar">Ar</span>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js'></script>
+    <script src='https://cdn.datatables.net/plug-ins/1.11.4/sorting/datetime-moment.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js'></script>
+    <script src='https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js'></script>
+    <script src='https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js'></script>
+    <script>
+        // jquery
+        $(document).ready(function(){
+            $.fn.dataTable.moment( 'DD/MM/YYYY' );
+            
+            var table = $('#tableau-stock').DataTable({
+                buttons: [
+                    {extend: 'excel', footer: true }
+                ],
+                "language": {
+                    "sEmptyTable": "Aucune donnée disponible dans le tableau",
+                    "sInfo": "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+                    "sInfoEmpty": "Affichage de l'élément 0 à 0 sur 0 élément",
+                    "sInfoFiltered": "(filtré à partir de _MAX_ éléments au total)",
+                    "sInfoPostFix": "",
+                    "sInfoThousands": ",",
+                    "sLengthMenu": "Afficher _MENU_ éléments",
+                    "sLoadingRecords": "Chargement...",
+                    "sProcessing": "Traitement...",
+                    "sSearch": "Rechercher :",
+                    "sZeroRecords": "Aucun élément correspondant trouvé",
+                    "oPaginate": {
+                        "sFirst": "Premier",
+                        "sLast": "Dernier",
+                        "sNext": "Suivant",
+                        "sPrevious": "Précédent"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+                        "sSortDescending": ": activer pour trier la colonne par ordre décroissant"
+                    },
+                    "select": {
+                        "rows": {
+                            "_": "%d lignes sélectionnées",
+                            "0": "Aucune ligne sélectionnée",
+                            "1": "1 ligne sélectionnée"
+                        }
+                    }
+                },
+                "ajax" : {
+                    url : "/profile/piece/stock",
+                    type : 'POST',
+                    data: function(d){
+                        d.date1 = $('#date1').val();
+                        d.date2 = $('#date2').val();
+                    },
+                    "dataSrc":"",
+
+                },columns: [
+                    { data: 'date' },
+                    { data: 'code' },
+                    { data: 'designation' },
+                    { data: 'qte' },
+                    { data: 'prix'},
+                    { data: 'prix_total'},
+                ],
+                "columnDefs": [
+                    {
+                        "targets": -1,
+                        "data": null,
+                        "defaultContent": ""
+                    },
+                    { className: "date", "targets": [0] },
+                    { className: "code", "targets": [1] },
+                    { className: "designation", "targets": [2] },
+                    { className: "quantite", "targets": [3] },
+                    { className: "prix_unitaire", "targets": [4] },
+                    { className: "prix_total", "targets": [5] },
+                    { className: "action", "targets": [6] },
+                ],
+                "footerCallback": function ( row, data, start, end, display ) {
+                    var format = new Intl.NumberFormat();
+                    var api = this.api();
+
+                    // Remove the formatting to get integer data for summation
+                    var intVal = function ( i ) {
+                        return typeof i === 'string' ?
+                            parseInt(i.replace(/ /g,'').replace(/'Ar'/g, '')) :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+
+                    // Total over all pages
+                    /*total = api
+                        .column( 8 )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);*/
+
+                    // Total over this page
+                    pageTotal = api
+                        .column( 5, { page: 'current'} )
+                        .data()
+                        .reduce( function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0 );
+
+                    // Update footer
+                    $( api.column( 5 ).footer() ).html(
+                        '<span class="montant">'+format.format(pageTotal)+'</span> <span class="unite_ar">Ar</span>'
+                    );
+                },
+                //annule le tri
+                order : [[0 , 'desc']],
+                ordering : true, 
+                searching:true,
+                responsive: true,
+                scrollY: false,
+                scrollX: true,
+                scrollCollapse: true,
+                paging: true,
+                autoFill: true
+            });
+            new $.fn.dataTable.FixedHeader(table);
+            $('#mySearchText').on( 'keyup', function () {
+                table.search($(this).val()).draw();
+            });
+            $('#export').on('click',function () {
+                table.buttons('.buttons-excel').trigger();
+            })
+        })
+    </script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}TranPositionPneu index{% endblock %}
+
+{% block body %}
+    <h1>Liste des positions de pneu</h1>
+    <a href="{{ path('tran_position_pneu_new') }}" class="btn-primary btn-sm">Ajouter</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nom</th>
+                <th>Rang</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for tran_position_pneu in tran_position_pneus %}
+            <tr>
+                <td>{{ tran_position_pneu.id }}</td>
+                <td>{{ tran_position_pneu.nom }}</td>
+                <td>{{ tran_position_pneu.rang }}</td>
+                <td>
+                    <a href="{{ path('tran_position_pneu_show', {'id': tran_position_pneu.id}) }}" class="btn btn-xs btn-info">Ouvrir</a>
+                    <a href="{{ path('tran_position_pneu_edit', {'id': tran_position_pneu.id}) }}" class="btn btn-xs btn-success">Modifer</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+   
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base_transport.html.twig' %}
+
+{% block title %}TransCodeDesignationPiece{% endblock %}
+
+{% block body %}
+    <h1>TransCodeDesignationPiece</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ trans_code_designation_piece.id }}</td>
+            </tr>
+            <tr>
+                <th>Code</th>
+                <td>{{ trans_code_designation_piece.code }}</td>
+            </tr>
+            <tr>
+                <th>Designation</th>
+                <td>{{ trans_code_designation_piece.designation }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('trans_code_designation_piece_index') }}" class="btn btn-primary btn-xs">Revenir à la liste</a>
+    <div class="d-flex my-4">
+        <a href="{{ path('trans_code_designation_piece_edit', {'id': trans_code_designation_piece.id}) }}" class="btn btn-xs btn-success mr-2">Modifier</a>
+        {{ include('trans_code_designation_piece/_delete_form.html.twig') }}
+    </div>
+{% endblock %}
